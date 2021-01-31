@@ -1,0 +1,9 @@
+﻿  Playground.cpp
+C:\Users\smith\source\repos\Playground\Playground\Playground.cpp(13,9): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+C:\Users\smith\source\repos\Playground\Playground\Playground.cpp(146,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Playground\Playground\Playground.cpp(199,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Playground\Playground\Playground.cpp(200,34): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\smith\source\repos\Playground\Playground\Playground.cpp(237,35): warning C4326: return type of 'main' should be 'int' instead of 'void'
+C:\Users\smith\source\repos\Playground\Playground\Playground.cpp(249,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Playground\Playground\Playground.cpp(250,34): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Playground.vcxproj -> C:\Users\smith\source\repos\Playground\Debug\Playground.exe

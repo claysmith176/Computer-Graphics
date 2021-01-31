@@ -1,0 +1,61 @@
+﻿  Source.cpp
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(59,23): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(82,45): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(82,35): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(82,25): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(102,28): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(105,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(183,52): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(184,31): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(229,23): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(230,103): warning C4305: 'argument': truncation from 'double' to 'const T'
+          with
+          [
+              T=float
+          ]
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(247,43): warning C4244: 'argument': conversion from 'double' to 'const float', possible loss of data
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(269,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(270,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(310,74): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(310,63): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(310,40): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(311,26): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(319,24): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\smith\source\repos\Playground\test1\Source.cpp(320,165): warning C4305: 'argument': truncation from 'double' to 'T'
+          with
+          [
+              T=float
+          ]
+  test1.vcxproj -> C:\Users\smith\source\repos\Playground\Debug\test1.exe
