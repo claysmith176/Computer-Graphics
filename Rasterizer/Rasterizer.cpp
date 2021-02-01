@@ -9,6 +9,7 @@
 #include <fstream> 
 #include <cmath> 
 #include <vector> 
+#include <string>
 
 #include<GL/glm/glm.hpp>
 #include<GL/glm/vec3.hpp>;
@@ -62,7 +63,6 @@ glm::mat3 rotate(const float degrees, const glm::vec3& axis) {
 }
 
 glm::vec3 left(float degrees, glm::vec3 eye, glm::vec3 up) {
-
 	glm::mat3 R = rotate(degrees, up);
 	return R * eye;
 	//up = up * R;

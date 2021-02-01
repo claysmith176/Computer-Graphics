@@ -10,14 +10,17 @@
 #include <fstream> 
 #include <cmath> 
 #include <vector> 
+#include <string>
 
-#include<GL/glm/glm.hpp>
-#include<GL/glm/vec3.hpp>;
+#include <GL/glm/glm.hpp>
+#include <GL/glm/vec3.hpp>;
 #include <GL/glm/vec3.hpp> // glm::vec3
 #include <GL/glm/vec4.hpp> // glm::vec4
 #include <GL/glm/mat4x4.hpp> // glm::mat4
 #include <GL/glm/gtc/matrix_transform.hpp>
 #include "GL/glm/ext.hpp"
+
+#include "Object.h"
 
 struct color {
     unsigned char r;
@@ -31,64 +34,64 @@ struct Circle {
     color c;
 };
 
-const int objectNumber = 1;
-const Circle objects[objectNumber] = {
-    {glm::vec3(-1,2,-1), 1, {255,0,0}} /*,
-    {glm::vec3(-1,1,0), 1, {0,255,0}},
-    {glm::vec3(0.1,-2,-2), 2, {0,0,255}},
-    {glm::vec3(1,-1,0), 1, {255,255,255}} */
-};
+const int objectNumber = 6;
+Object* objectsTest[objectNumber];
 
-bool checkObject(glm::vec3 dir, glm::vec3 origin, int i, float &dist) {
-    float x0, x1;
-    glm::vec3 test = objects[i].center;
-    glm::vec3 L = origin - objects[i].center; // 0, -1, -5
-    float a = glm::dot(dir, dir);
-    float b = 2 * glm::dot(dir, L);
-    float c = glm::dot(L, L) - (objects[i].radius * objects[i].radius);
+glm::mat3 rotate(const float degrees, const glm::vec3& axis) {
+    float x = axis.x;
+    float y = axis.y;
+    float z = axis.z;
+    float radians = degrees * (M_PI / 180);
 
+    glm::mat3 xmat(1.0f);
+    glm::mat3 ymat = glm::outerProduct(axis, axis);
+    glm::mat3 zmat(0, z, -y, -z, 0, x, y, -x, 0);
 
-    float discr = b * b - 4 * a * c;
-    if (discr < 0) {
-        return false;
-    }
-    else if (discr == 0) {
-        x0 = -b / (2 * a);
-        dist = x0;
-    }
-    else {
-        float q;
-        if (b < 0) {
-            q = -0.5 * (b + (float)std::sqrt(discr));
-        }
-        else {
-            q = -0.5 * (b - (float)std::sqrt(discr));
-        }
-        x0 = q / a;
-        x1 = c / q;
+    xmat = xmat * cos(radians);
+    ymat = ymat * (1 - cos(radians));
+    zmat = zmat * sin(radians);
 
-        dist = std::min(x0, x1);
-    }
-    return true;
+    glm::mat3 test = xmat + ymat + zmat;
+    return test;
 }
 
-int castRay(glm::vec3 dir, glm::vec3 origin) {
+glm::vec3 left(float degrees, glm::vec3 eye, glm::vec3 up) {
+    glm::mat3 R = rotate(degrees, up);
+    return R * eye;
+    //up = up * R;
+}
+
+glm::vec3 castRay(glm::vec3 dir, glm::vec3 origin) {
     float distance = INFINITY;
-    int object = -1;
+    int hitObject = 0;
     for (int i = 0; i < objectNumber; i++) {
-        float currentD;
-        if (checkObject(dir, origin, i, currentD)) {
-            if (currentD != 0) {
-                distance = std::min(distance, currentD);
-                object = i;
+        float currentD = INFINITY;
+        if (objectsTest[i]->intersect(origin, dir, currentD )) {
+            if (currentD > 0 && currentD < distance) {
+                distance = currentD;
+                hitObject = i;
             }
         }
     }
-    return object;
+
+    if (distance < INFINITY) {
+        glm::vec3 pHit = origin + (distance * dir);
+        glm::vec3 normal;
+        glm::vec2 tex;
+
+        objectsTest[hitObject]->getSurfaceData(pHit, normal, tex);
+
+        glm::vec3 cWhite(255, 255, 255);
+        glm::vec3 cObject = objectsTest[hitObject]->color;
+
+        float mixValue = (fmodf(tex.x * 2, 1) > 0.5) ^ (fmodf(tex.y * 2, 1) > 0.5);
+        glm::vec3 hitColor = cWhite* (1 - mixValue) + cObject * mixValue;
+        return hitColor;
+    }
+    return glm::vec3(0, 0, 0);
 }
 
-void render(int iWidth, int iHeight, float FOV) {
-    glm::vec3 origin(1, 0, 1);
+void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, std::string name) {
     glm::vec3 center(0, 0, 0);
     glm::vec3 up(0, 1, 0);
 
@@ -107,7 +110,7 @@ void render(int iWidth, int iHeight, float FOV) {
 
     for (int i = 0; i < iHeight; i++) {
         for (int j = 0; j < iWidth; j++) {
-            if (j == 5 && i == 5) {
+            if (j == 422 && i == 633) {
                 int ad = 45;
                }
 
@@ -120,16 +123,20 @@ void render(int iWidth, int iHeight, float FOV) {
 
             dir = dir - origin;
             dir = glm::normalize(dir);
-            int object = castRay(dir, origin);
-            if (object >= 0 ) {
-                frameBuffer[i * iWidth + j] = objects[object].c;
-            }
+            
+            glm::vec3 colorVector = castRay(dir, origin);
+            color c;
+            c.r = (unsigned char)colorVector.x;
+            c.g = (unsigned char)colorVector.y;
+            c.b = (unsigned char)colorVector.z;
+
+            frameBuffer[i * iWidth + j] = c; 
         }
     }
-    std::cout << "Render Done" << std::endl;
+    std::cout << "Render " << name.at(0) << " Done" << std::endl;
 
     std::ofstream ofs;
-    ofs.open("./output.ppm", std::ios_base::out | std::ios_base::binary);
+    ofs.open("./Video/" + name, std::ios_base::out | std::ios_base::binary);
     ofs << "P6 " << iWidth << " " << iHeight << " 255 ";
     ofs.write((char*)frameBuffer, iHeight * iWidth * 3);
     ofs.close();
@@ -139,6 +146,30 @@ void render(int iWidth, int iHeight, float FOV) {
 
 int main()
 {
-    render(844, 844, 90);
-    //std::cout << "Hello World!\n";
+    Sphere mySphere(glm::vec3(0, 0, 0), glm::vec3(255, 0, 0), 2);
+    std::srand(time(0));
+    for (int i = 0; i < objectNumber-3; i++) {
+        float x, y, z;
+        x = std::rand() % 8 - 4;
+        y = std::rand() % 4;
+        z = std::rand() % 8 - 4;
+        glm::vec3 cent(x, y, z);
+        glm::vec3 colr(std::rand() % 126 + 126, std::rand() % 126 + 126, std::rand() % 126 + 126);
+        objectsTest[i] = new Sphere(cent, colr, 1.5);
+    }
+    objectsTest[objectNumber - 3] = new Plane(glm::vec3(0, 1, 0), glm::vec3(0, -3, 0), glm::vec3(126, 126, 0));
+    objectsTest[objectNumber - 2] = new Plane(glm::normalize(glm::vec3(-5, 0, 5)), glm::vec3(5, 0, -5), glm::vec3(64, 0, 64));
+    objectsTest[objectNumber - 1] = new Plane(glm::normalize(glm::vec3(5, 0, 5)), glm::vec3(-5, 0, -5), glm::vec3(0, 126, 126));
+
+
+    glm::vec3 eye(0, 1, 7);
+    eye = left(-60, eye, glm::vec3(0, 1, 0));
+    for (int i = 0; i < 120; i++) {
+        render(1920, 1080, 90, eye, std::to_string(i) + ".ppm");
+        eye = left(1, eye, glm::vec3(0, 1, 0));
+    }
+    //render(844, 844, 90, eye, "output.ppm");
+    for (int i = 0; i < objectNumber; i++) {
+        delete objectsTest[i];
+    }
 }
