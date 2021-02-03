@@ -22,6 +22,8 @@
 
 #include "Object.h"
 
+using namespace std;
+
 struct color {
     unsigned char r;
     unsigned char g;
@@ -133,10 +135,10 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, std::string na
             frameBuffer[i * iWidth + j] = c; 
         }
     }
-    std::cout << "Render " << name.at(0) << " Done" << std::endl;
+    std::cout << "Render " << name << " Done" << std::endl;
 
     std::ofstream ofs;
-    ofs.open("./Video/" + name, std::ios_base::out | std::ios_base::binary);
+    ofs.open("./Video/" + name + ".ppm", std::ios_base::out | std::ios_base::binary);
     ofs << "P6 " << iWidth << " " << iHeight << " 255 ";
     ofs.write((char*)frameBuffer, iHeight * iWidth * 3);
     ofs.close();
@@ -146,7 +148,6 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, std::string na
 
 int main()
 {
-    Sphere mySphere(glm::vec3(0, 0, 0), glm::vec3(255, 0, 0), 2);
     std::srand(time(0));
     for (int i = 0; i < objectNumber-3; i++) {
         float x, y, z;
@@ -165,7 +166,7 @@ int main()
     glm::vec3 eye(0, 1, 7);
     eye = left(-60, eye, glm::vec3(0, 1, 0));
     for (int i = 0; i < 120; i++) {
-        render(1920, 1080, 90, eye, std::to_string(i) + ".ppm");
+        render(1920, 1080, 90, eye, std::to_string(i));
         eye = left(1, eye, glm::vec3(0, 1, 0));
     }
     //render(844, 844, 90, eye, "output.ppm");

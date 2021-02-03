@@ -142,7 +142,6 @@
     <ClCompile Include="spRayTracer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\test1\Header.h" />
     <ClInclude Include="Object.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

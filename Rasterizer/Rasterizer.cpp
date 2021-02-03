@@ -231,10 +231,10 @@ void createImage(glm::vec3 eye, glm::vec3 center, glm::vec3 up, std::string name
 		}
 	}
 
-	std::cout << "Render Done" << std::endl;
+	std::cout << "Render " << name << " Done" << std::endl;
 
 	std::ofstream ofs;
-	ofs.open("./VideoP/" + name, std::ios_base::out | std::ios_base::binary);
+	ofs.open("./VideoP/" + name + ".ppm", std::ios_base::out | std::ios_base::binary);
 	ofs << "P6 " << image_width << " " << image_height << " 255 ";
 	ofs.write((char*)colors, image_height * image_width * 3);
 	ofs.close();
@@ -248,7 +248,7 @@ void startAnimation() {
 	glm::vec3 up(0, 1, 0);
 	glm::vec3 center(0, 5, 0);
 	for (int i = 0; i < 360; i++) {
-		std::string name = ("image" + std::to_string(i) + ".ppm");
+		std::string name = ("image" + std::to_string(i));
 		createImage(eye, center, up, name);
 		eye = left(1, eye, up);
 	}
