@@ -298,7 +298,7 @@ void render(
 // as well as set the options for the render (image widht and height etc.).
 // We then call the render function().
 // [/comment]
-int main(int argc, char** argv)
+/*int main(int argc, char** argv)
 {
     // creating the scene (adding objects and lights)
     std::vector<std::unique_ptr<Object>> objects;
@@ -323,4 +323,4 @@ int main(int argc, char** argv)
     render(options, objects);
 
     return 0;
-}
+}*/

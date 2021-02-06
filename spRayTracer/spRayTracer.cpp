@@ -36,8 +36,8 @@ struct Circle {
     color c;
 };
 
-const int objectNumber = 6;
-Object* objectsTest[objectNumber];
+const int objectNumber = 10;
+Object* objects[objectNumber];
 
 glm::mat3 rotate(const float degrees, const glm::vec3& axis) {
     float x = axis.x;
@@ -68,7 +68,7 @@ glm::vec3 castRay(glm::vec3 dir, glm::vec3 origin) {
     int hitObject = 0;
     for (int i = 0; i < objectNumber; i++) {
         float currentD = INFINITY;
-        if (objectsTest[i]->intersect(origin, dir, currentD )) {
+        if (objects[i]->intersect(origin, dir, currentD )) {
             if (currentD > 0 && currentD < distance) {
                 distance = currentD;
                 hitObject = i;
@@ -77,14 +77,15 @@ glm::vec3 castRay(glm::vec3 dir, glm::vec3 origin) {
     }
 
     if (distance < INFINITY) {
+
         glm::vec3 pHit = origin + (distance * dir);
         glm::vec3 normal;
         glm::vec2 tex;
 
-        objectsTest[hitObject]->getSurfaceData(pHit, normal, tex);
+        objects[hitObject]->getSurfaceData(pHit, normal, tex);
 
         glm::vec3 cWhite(255, 255, 255);
-        glm::vec3 cObject = objectsTest[hitObject]->color;
+        glm::vec3 cObject = objects[hitObject]->color;
 
         float mixValue = (fmodf(tex.x * 2, 1) > 0.5) ^ (fmodf(tex.y * 2, 1) > 0.5);
         glm::vec3 hitColor = cWhite* (1 - mixValue) + cObject * mixValue;
@@ -97,10 +98,6 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, std::string na
     glm::vec3 center(0, 0, 0);
     glm::vec3 up(0, 1, 0);
 
-    glm::vec3 w = glm::normalize(origin - center);
-    glm::vec3 u = glm::normalize(glm::cross(up, w));
-    glm::vec3 v = glm::cross(w, u);
-
     glm::mat4 camera2World = glm::inverse(glm::lookAt(origin, center, glm::vec3(0, 1, 0)));
 
     color* frameBuffer = new color[iHeight * iWidth];
@@ -112,10 +109,6 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, std::string na
 
     for (int i = 0; i < iHeight; i++) {
         for (int j = 0; j < iWidth; j++) {
-            if (j == 422 && i == 633) {
-                int ad = 45;
-               }
-
             float px = (2 * (j + 0.5) / (float)iWidth-1) * scale * aspectRatio;
             float py = (1 - 2 * (i + 0.5) / (float)iHeight) * scale;
             
@@ -149,28 +142,47 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, std::string na
 int main()
 {
     std::srand(time(0));
-    for (int i = 0; i < objectNumber-3; i++) {
+
+    glm::vec3 v0(-5, -3, -5);
+    glm::vec3 v1(5, -3, -5);
+    glm::vec3 v2(5, -3, 5);
+    glm::vec3 v3(-5,-3, 5);
+    glm::vec3 v4(0, 5, 0);
+    glm::vec3 red(255, 0, 0);
+    glm::vec3 green(0, 255, 0);
+    glm::vec3 blue(0, 0, 255);
+    glm::vec3 white(255, 255, 255);
+
+    objects[0] = new Triangle(v0, v1, v4, red);
+    objects[1] = new Triangle(v0, v3, v4, green);
+    objects[2] = new Triangle(v2, v1, v4, blue);
+    objects[3] = new Triangle(v2, v3, v4, white);
+    objects[4] = new Sphere(glm::vec3(0, 6, 0), glm::vec3(200, 0, 200), 1);
+
+    /*for (int i = 0; i < objectNumber-3; i++) {
         float x, y, z;
         x = std::rand() % 8 - 4;
         y = std::rand() % 4;
         z = std::rand() % 8 - 4;
         glm::vec3 cent(x, y, z);
         glm::vec3 colr(std::rand() % 126 + 126, std::rand() % 126 + 126, std::rand() % 126 + 126);
-        objectsTest[i] = new Sphere(cent, colr, 1.5);
-    }
-    objectsTest[objectNumber - 3] = new Plane(glm::vec3(0, 1, 0), glm::vec3(0, -3, 0), glm::vec3(126, 126, 0));
-    objectsTest[objectNumber - 2] = new Plane(glm::normalize(glm::vec3(-5, 0, 5)), glm::vec3(5, 0, -5), glm::vec3(64, 0, 64));
-    objectsTest[objectNumber - 1] = new Plane(glm::normalize(glm::vec3(5, 0, 5)), glm::vec3(-5, 0, -5), glm::vec3(0, 126, 126));
+        objects[i] = new Sphere(cent, colr, 1.5);
+    } */
+    objects[5] = new Plane(glm::vec3(0, 1, 0), glm::vec3(0, -3, 0), glm::vec3(126, 126, 0));
+    objects[6] = new Plane(glm::vec3(1, 0, 0), glm::vec3(-15, 0, 0), glm::vec3(64, 0, 64));
+    objects[7] = new Plane(glm::vec3(-1, 0, 0), glm::vec3(15, 0, 0), glm::vec3(0, 126, 126));
+    objects[8] = new Plane(glm::vec3(0, 0, 1), glm::vec3(0, 0, -15), glm::vec3(126, 126, 126));
+    objects[9] = new Plane(glm::vec3(0, 0, -1), glm::vec3(0, 0, 15), glm::vec3(0, 200, 200));
 
 
-    glm::vec3 eye(0, 1, 7);
-    eye = left(-60, eye, glm::vec3(0, 1, 0));
-    for (int i = 0; i < 120; i++) {
-        render(1920, 1080, 90, eye, std::to_string(i));
+    glm::vec3 eye(-9, 3, -9);
+    //eye = left(-60, eye, glm::vec3(0, 1, 0));
+    for (int i = 0; i < 360; i++) {
+        render(1440, 810, 90, eye, std::to_string(i));
         eye = left(1, eye, glm::vec3(0, 1, 0));
-    }
-    //render(844, 844, 90, eye, "output.ppm");
+    } 
+    //render(1440, 810, 90, eye, "output.ppm");
     for (int i = 0; i < objectNumber; i++) {
-        delete objectsTest[i];
+        delete objects[i];
     }
 }

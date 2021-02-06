@@ -112,3 +112,42 @@ public:
         tex.y = 1.9;
     }
 };
+
+class Triangle : public Object {
+public:
+    glm::vec3 v0;
+    glm::vec3 v1;
+    glm::vec3 v2;
+    Triangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 color) {
+        this->v0 = v0;
+        this->v1 = v1;
+        this->v2 = v2;
+        this->color = color;
+    }
+    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const {
+        glm::vec3 v0v1 = (v1 - v0);
+        glm::vec3 v0v2 = (v2 - v0);
+        glm::vec3 pvec = glm::cross(dir, v0v2);
+        float det = glm::dot(pvec, v0v1);
+        float invDet = 1 / det;
+
+        glm::vec3 tvec = orig - v0;
+        float u = glm::dot(tvec, pvec) * invDet;
+        if (u < 0 || u > 1) {
+            return false;
+        }
+
+        glm::vec3 qvec = glm::cross(tvec, v0v1);
+        float v = glm::dot(qvec, dir) * invDet;
+        if (v < 0 || u + v > 1) {
+            return false;
+        }
+        dist = glm::dot(qvec, v0v2) * invDet;
+        return true;
+    }
+    void getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) {
+        Nhit = glm::normalize(glm::cross(v1-v0, v2-v0));
+        tex.x = 0;
+        tex.y = 1.9;
+    }
+};
