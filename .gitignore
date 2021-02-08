@@ -6,3 +6,5 @@ Debug/
 *.ppm
 *.png
 x64/
+Objects/
+*.obj
