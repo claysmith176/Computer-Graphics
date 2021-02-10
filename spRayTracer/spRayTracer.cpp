@@ -179,15 +179,18 @@ int main()
     objects[9] = new Plane(glm::vec3(0, 0, -1), glm::vec3(0, 0, 15), glm::vec3(0, 200, 200));
     */
 
-    glm::vec3 eye(50, 100, 140);
-    glm::vec3 center(0, 90, 0);
-    glm::vec3 up(-1, 0, 0);
+    glm::vec3 eye(50, 10, 50);
+    glm::vec3 center(0, 10, 0);
+    glm::vec3 up(0, 1, 0);
+    const float FOV = 110;
     /*for (int i = 0; i < 360; i++) {
-        render(1440, 810, 90, eye, std::to_string(i));
+        if (i > 96) {
+            render(853, 480, FOV, eye, center, up, std::to_string(i));
+        }
         eye = left(1, eye, glm::vec3(0, 1, 0));
     } */
 
-    render(853, 480, 90, eye, center, up, "out.ppm");
+    render(853, 480, FOV, eye, center, up, "out.ppm");
     for (int i = 0; i < objectNumber; i++) {
         delete objects[i];
     } 
