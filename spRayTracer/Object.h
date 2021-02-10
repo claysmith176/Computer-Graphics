@@ -281,8 +281,6 @@ public:
         std::vector<glm::vec3> verticies;
         std::vector<glm::vec3> vertexNorm;
         std::vector<glm::vec3> vertexTex;
-        
-
 
         try {
             while (std::getline(ifs, line)) {

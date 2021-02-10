@@ -11,6 +11,7 @@
 #include <cmath> 
 #include <vector> 
 #include <string>
+#include <chrono>
 
 #include <GL/glm/glm.hpp>
 #include <GL/glm/vec3.hpp>;
@@ -183,14 +184,21 @@ int main()
     glm::vec3 center(0, 10, 0);
     glm::vec3 up(0, 1, 0);
     const float FOV = 110;
-    /*for (int i = 0; i < 360; i++) {
-        if (i > 96) {
-            render(853, 480, FOV, eye, center, up, std::to_string(i));
-        }
+    auto startTime = chrono::high_resolution_clock::now();
+    for (int i = 0; i < 3; i++) {
+        auto renderStart = chrono::high_resolution_clock::now();
+        render(853, 480, FOV, eye, center, up, std::to_string(i));
+        auto renderStop = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::milliseconds>(renderStop - renderStart);
+        std::cout << (int)duration.count() / 1000 << "." << duration.count() % 1000 << " Seconds" << std::endl;
         eye = left(1, eye, glm::vec3(0, 1, 0));
-    } */
+    }
 
-    render(853, 480, FOV, eye, center, up, "out.ppm");
+    auto endTime = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(endTime - startTime);
+    std::cout << "Total Time "<< ((int)duration.count() / 1000) / 60 << ":" << ((int)duration.count() / 1000) % 60 << "." << duration.count() % 1000  << std::endl;
+
+    //render(853, 480, FOV, eye, center, up, "out.ppm");
     for (int i = 0; i < objectNumber; i++) {
         delete objects[i];
     } 
