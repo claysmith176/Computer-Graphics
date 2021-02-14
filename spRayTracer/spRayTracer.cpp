@@ -145,6 +145,7 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 cent
 int main()
 {
     objects[0] = new TriangleMesh("fox.obj");
+    //objects[0] = new Triangle(glm::vec3(0, 0, 0), glm::vec3(1, 0, 0), glm::vec3(1, 1, 0), glm::vec3(100, 100, 100));
     std::cout << "Loaded" << std::endl;
     /*std::srand(time(0));
 
@@ -164,7 +165,7 @@ int main()
     objects[3] = new Triangle(v2, v3, v4, white);
     objects[4] = new Sphere(glm::vec3(0, 6, 0), glm::vec3(200, 0, 200), 1);
 
-    for (int i = 0; i < objectNumber-3; i++) {
+    /*for (int i = 0; i < objectNumber-3; i++) {
         float x, y, z;
         x = std::rand() % 8 - 4;
         y = std::rand() % 4;
@@ -172,7 +173,7 @@ int main()
         glm::vec3 cent(x, y, z);
         glm::vec3 colr(std::rand() % 126 + 126, std::rand() % 126 + 126, std::rand() % 126 + 126);
         objects[i] = new Sphere(cent, colr, 1.5);
-    }
+    } 
     objects[5] = new Plane(glm::vec3(0, 1, 0), glm::vec3(0, -3, 0), glm::vec3(126, 126, 0));
     objects[6] = new Plane(glm::vec3(1, 0, 0), glm::vec3(-15, 0, 0), glm::vec3(64, 0, 64));
     objects[7] = new Plane(glm::vec3(-1, 0, 0), glm::vec3(15, 0, 0), glm::vec3(0, 126, 126));
