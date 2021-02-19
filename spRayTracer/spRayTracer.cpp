@@ -22,6 +22,7 @@
 #include "GL/glm/ext.hpp"
 
 #include "Object.h"
+#include "Light.h"
 
 using namespace std;
 
@@ -37,8 +38,11 @@ struct Circle {
     color c;
 };
 
-const int objectNumber = 1;
-Object* objects[objectNumber];
+const int objectNumber = 3;
+vector<Object*> objects;
+vector<Light*> lights;
+const glm::vec3 backgroundColor(57, 120, 200);
+
 
 glm::mat3 rotate(const float degrees, const glm::vec3& axis) {
     float x = axis.x;
@@ -64,10 +68,17 @@ glm::vec3 left(float degrees, glm::vec3 eye, glm::vec3 up) {
     //up = up * R;
 }
 
-glm::vec3 castRay(glm::vec3 dir, glm::vec3 origin) {
+glm::vec3 reflect(glm::vec3& I, glm::vec3& N) {
+    return I - 2.0f * (glm::dot(I, N) * N);
+}
+
+glm::vec3 castRay(glm::vec3 dir, glm::vec3 origin, int depth) {
     float distance = INFINITY;
     int hitObject = 0;
-    for (int i = 0; i < objectNumber; i++) {
+    if (depth >= 4) {
+        return backgroundColor;
+    }
+    for (int i = 0; i < objects.size(); i++) {
         float currentD = INFINITY;
         if (objects[i]->intersect(origin, dir, currentD )) {
             if (currentD > 0 && currentD < distance) {
@@ -78,7 +89,6 @@ glm::vec3 castRay(glm::vec3 dir, glm::vec3 origin) {
     }
 
     if (distance < INFINITY) {
-
         glm::vec3 pHit = origin + (distance * dir);
         glm::vec3 normal;
         glm::vec2 tex;
@@ -87,12 +97,39 @@ glm::vec3 castRay(glm::vec3 dir, glm::vec3 origin) {
 
         glm::vec3 cWhite(255, 255, 255);
         glm::vec3 cObject = objects[hitObject]->color;
+        glm::vec3 hitColor(0,0,0);
 
-        float mixValue = (fmodf(tex.x * 2, 1) > 0.5) ^ (fmodf(tex.y * 2, 1) > 0.5);
-        glm::vec3 hitColor = cWhite* (1 - mixValue) + cObject * mixValue;
+        //float mixValue = (fmodf(tex.x * 2, 1) > 0.5) ^ (fmodf(tex.y * 2, 1) > 0.5);
+        //glm::vec3 hitColor = cWhite* (1 - mixValue) + cObject * mixValue;
+        if (objects[hitObject]->surfaceType == 0) {
+            for (int j = 0; j < lights.size(); j++) {
+                bool vis = true;
+                glm::vec3 lightDir, lightIntensity;
+                float lightDist;
+                lights[j]->getDirectionAndIntensity(pHit, lightDir, lightIntensity, lightDist);
+                float dotProduct = glm::dot(normal, (lightDir * -1.0f));
+                if (dotProduct > 0) {
+                    for (int i = 0; i < objects.size(); i++) {
+                        float distance = INFINITY;
+                        if (objects[i]->intersect(pHit + normal * 1e-2f, (lightDir * -1.0f), distance)) {
+                            if (distance > 0 && distance < lightDist) {
+                                vis = false;
+                            }
+                        }
+                    }
+                    hitColor += (float)vis * (objects[hitObject]->albedo / (float)M_PI) * lightIntensity * std::max(0.0f, dotProduct);
+                }
+            }
+        }
+        else if (objects[hitObject]->surfaceType == 1) {
+            hitColor = .8f * castRay(reflect(dir, normal), pHit + normal * 1e-2f, depth + 1);
+        }
+        hitColor.x = std::min(255.0f, hitColor.x);
+        hitColor.y = std::min(255.0f, hitColor.y);
+        hitColor.z = std::min(255.0f, hitColor.z);
         return hitColor;
     }
-    return glm::vec3(0, 0, 0);
+    return backgroundColor;
 }
 
 void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 center, glm::vec3 up, std::string name) {
@@ -108,7 +145,7 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 cent
 
     for (int i = 0; i < iHeight; i++) {
         for (int j = 0; j < iWidth; j++) {
-            if (i == 4 && j == 4) {
+            if (i == 285 && j == 289) {
                 int name = 43;
             }
 
@@ -122,7 +159,7 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 cent
             dir = dir - origin;
             dir = glm::normalize(dir);
             
-            glm::vec3 colorVector = castRay(dir, origin);
+            glm::vec3 colorVector = castRay(dir, origin, 0);
             color c;
             c.r = (unsigned char)colorVector.x;
             c.g = (unsigned char)colorVector.y;
@@ -144,49 +181,25 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 cent
 
 int main()
 {
-    objects[0] = new TriangleMesh("fox.obj");
-    //objects[0] = new Triangle(glm::vec3(0, 0, 0), glm::vec3(1, 0, 0), glm::vec3(1, 1, 0), glm::vec3(100, 100, 100));
+    objects.push_back(new Sphere(glm::vec3(0, 3, 0), glm::vec3(192, 192, 192), 3, glm::vec3(.5, .5, .5), 0));
+    objects.push_back(new TriangleMesh("Objects/flatPlane.obj", glm::vec3(.5,.5,.5), 1));
+    objects.push_back(new TriangleMesh("Objects/rightPlane.obj", glm::vec3(.5, .5, .5), 1));
+    objects.push_back(new TriangleMesh("Objects/leftPlane.obj", glm::vec3(.5, .5, .5), 1));
+    objects.push_back(new TriangleMesh("Objects/backPlane.obj", glm::vec3(.5, .5, .5), 1));
+    objects.push_back(new TriangleMesh("Objects/frontPlane.obj", glm::vec3(.5, .5, .5), 1));
+
+    lights.push_back(new DistantLight(glm::vec3(0, -1, -1), glm::vec3(255, 255, 255), 3));
+    lights.push_back(new DistantLight(glm::vec3(0, -1, 1), glm::vec3(255, 255, 255), 3));
+
     std::cout << "Loaded" << std::endl;
-    /*std::srand(time(0));
 
-    glm::vec3 v0(-5, -3, -5);
-    glm::vec3 v1(5, -3, -5);
-    glm::vec3 v2(5, -3, 5);
-    glm::vec3 v3(-5,-3, 5);
-    glm::vec3 v4(0, 5, 0);
-    glm::vec3 red(255, 0, 0);
-    glm::vec3 green(0, 255, 0);
-    glm::vec3 blue(0, 0, 255);
-    glm::vec3 white(255, 255, 255);
-
-    objects[0] = new Triangle(v0, v1, v4, red);
-    objects[1] = new Triangle(v0, v3, v4, green);
-    objects[2] = new Triangle(v2, v1, v4, blue);
-    objects[3] = new Triangle(v2, v3, v4, white);
-    objects[4] = new Sphere(glm::vec3(0, 6, 0), glm::vec3(200, 0, 200), 1);
-
-    /*for (int i = 0; i < objectNumber-3; i++) {
-        float x, y, z;
-        x = std::rand() % 8 - 4;
-        y = std::rand() % 4;
-        z = std::rand() % 8 - 4;
-        glm::vec3 cent(x, y, z);
-        glm::vec3 colr(std::rand() % 126 + 126, std::rand() % 126 + 126, std::rand() % 126 + 126);
-        objects[i] = new Sphere(cent, colr, 1.5);
-    } 
-    objects[5] = new Plane(glm::vec3(0, 1, 0), glm::vec3(0, -3, 0), glm::vec3(126, 126, 0));
-    objects[6] = new Plane(glm::vec3(1, 0, 0), glm::vec3(-15, 0, 0), glm::vec3(64, 0, 64));
-    objects[7] = new Plane(glm::vec3(-1, 0, 0), glm::vec3(15, 0, 0), glm::vec3(0, 126, 126));
-    objects[8] = new Plane(glm::vec3(0, 0, 1), glm::vec3(0, 0, -15), glm::vec3(126, 126, 126));
-    objects[9] = new Plane(glm::vec3(0, 0, -1), glm::vec3(0, 0, 15), glm::vec3(0, 200, 200));
-    */
-
-    glm::vec3 eye(50, 10, 50);
+    glm::vec3 eye(0, 3, 9);
     glm::vec3 center(0, 10, 0);
     glm::vec3 up(0, 1, 0);
-    const float FOV = 110;
+    const float FOV = 120;
     auto startTime = chrono::high_resolution_clock::now();
-    for (int i = 0; i < 3; i++) {
+
+    for (int i = 0; i < 360; i++) {
         auto renderStart = chrono::high_resolution_clock::now();
         render(853, 480, FOV, eye, center, up, std::to_string(i));
         auto renderStop = chrono::high_resolution_clock::now();
@@ -202,5 +215,6 @@ int main()
     //render(853, 480, FOV, eye, center, up, "out.ppm");
     for (int i = 0; i < objectNumber; i++) {
         delete objects[i];
-    } 
+    }
+
 }

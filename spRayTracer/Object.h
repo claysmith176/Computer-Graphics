@@ -15,9 +15,11 @@
 class Object {
 public:
     glm::vec3 color;
+    glm::vec3 albedo;
+    int surfaceType; // 0 is diffuse: i is reflective
     Object();
 
-    virtual bool intersect(const glm::vec3& orgin, const glm::vec3& dir, float& dist) const = 0;
+    virtual bool intersect(const glm::vec3& orgin, const glm::vec3& dir, float& dist) = 0;
     virtual void getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const = 0;
 };
 
@@ -26,9 +28,9 @@ public:
     float radius;
     float radius2;
     glm::vec3 center;
-    Sphere(glm::vec3 center, glm::vec3 color, float radius);
+    Sphere(glm::vec3 center, glm::vec3 color, float radius, glm::vec3 albedo, int surfaceType);
 
-    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const;
+    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist);
     void getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const;
 };
 
@@ -36,8 +38,8 @@ class Plane : public Object {
 public:
     glm::vec3 normal;
     glm::vec3 center;
-    Plane(glm::vec3 normal, glm::vec3 center, glm::vec3 color);
-    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const;
+    Plane(glm::vec3 normal, glm::vec3 center, glm::vec3 color, glm::vec3 albedo, int surfaceType);
+    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist);
     void getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const;
 };
 
@@ -46,8 +48,8 @@ public:
     glm::vec3 v0;
     glm::vec3 v1;
     glm::vec3 v2;
-    Triangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 color);
-    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const;
+    Triangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 color, glm::vec3 albedo, int surfaceType);
+    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist);
     void getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const;
 };
 
@@ -55,32 +57,37 @@ class BoundingBox : public Object {
 public:
     glm::vec3 minBound;
     glm::vec3 maxBound;
+    glm::vec3 recentNormal;
 
     BoundingBox();
-    BoundingBox(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax);
+    BoundingBox(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, glm::vec3 albedo, int surfaceType);
 
-    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const;
+    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist);
     void getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const;
 };
 
 class TriangleMesh : public Object {
 public:
     int numTris;
-    std::unique_ptr<int[]> trisIndex;
-    std::unique_ptr<glm::vec3[]> verticies;
-    //int* vertexIndex;
-    //glm::vec3* verticies;
+    int lastHitTri;
+    std::vector<int> trisIndex;
+    std::vector<glm::vec3> verticies;
+    std::vector<int> normIndex;
+    std::vector<glm::vec3> normals;
     BoundingBox bounding;
 
     void triangulateMesh(
         const int numFaces,
-        int* faceIndex,
-        int* vertsIndex,
-        glm::vec3* verts,
-        int numVerts);
+        std::vector<int>& faceIndex,
+        std::vector<int>& vertsIndex,
+        std::vector<int>& normalIndex,
+        std::vector<glm::vec3>& verts,
+        std::vector<glm::vec3>& norms,
+        int numVerts,
+        int numNorms);
 
-    TriangleMesh(std::string file);
+    TriangleMesh(std::string fil, glm::vec3 albede, int surfaceType);
     bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir, float& dist, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, bool& edge) const;
-    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const;
+    bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist);
     void getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const;
 };

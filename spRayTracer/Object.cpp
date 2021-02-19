@@ -18,15 +18,18 @@
 
 Object::Object() {}
 
-
-    Sphere::Sphere(glm::vec3 center, glm::vec3 color, float radius) {
+    Sphere::Sphere(glm::vec3 center, glm::vec3 color, float radius, glm::vec3 albedo, int surfaceType) {
         this->radius = radius;
         this->radius2 = radius * radius;
         this->center = center;
         this->color = color;
+        this->albedo = albedo;
+        this->surfaceType = surfaceType;
     }
 
-    bool Sphere::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const {
+    bool Sphere::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist)
+    
+    {
         float x0, x1;
         glm::vec3 test = center;
         glm::vec3 L = orig - center; // 0, -1, -5
@@ -68,12 +71,14 @@ Object::Object() {}
     }
 
 
-    Plane::Plane(glm::vec3 normal, glm::vec3 center, glm::vec3 color) {
+    Plane::Plane(glm::vec3 normal, glm::vec3 center, glm::vec3 color, glm::vec3 albedo, int surfaceType) {
         this->normal = normal;
         this->center = center;
         this->color = color;
+        this->albedo = albedo;
+        this->surfaceType = surfaceType;
     }
-    bool Plane::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const {
+    bool Plane::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) {
         float denom = glm::dot(dir, normal);
         if (std::abs(denom) > 1e-6) {
             glm::vec3 p0l0 = center - orig;
@@ -93,13 +98,17 @@ Object::Object() {}
         tex.y = 1.9;
     }
 
-    Triangle::Triangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 color) {
+
+    Triangle::Triangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 color, glm::vec3 albedo, int surfaceType) {
         this->v0 = v0;
         this->v1 = v1;
         this->v2 = v2;
         this->color = color;
+        this->albedo = albedo;
+        this->surfaceType = surfaceType;
     }
-    bool Triangle::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const {
+
+    bool Triangle::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) {
         glm::vec3 v0v1 = (v1 - v0);
         glm::vec3 v0v2 = (v2 - v0);
         glm::vec3 pvec = glm::cross(dir, v0v2);
@@ -128,12 +137,14 @@ Object::Object() {}
 
     BoundingBox::BoundingBox() {}
 
-    BoundingBox::BoundingBox(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax) {
+    BoundingBox::BoundingBox(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, glm::vec3 albedo, int surfaceType) {
         minBound = glm::vec3(xmin, ymin, zmin);
         maxBound = glm::vec3(xmax, ymax, zmax);
+        this->albedo = albedo;
+        this->surfaceType = surfaceType;
     }
 
-    bool BoundingBox::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const {
+    bool BoundingBox::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) {
         glm::vec3 invDir(1 / dir.x, 1 / dir.y, 1 / dir.z);
         float tmin, tmax, tymin, tymax, tzmin, tzmax;
 
@@ -186,29 +197,33 @@ Object::Object() {}
         return true;
     }
     void BoundingBox::getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const {
-
+        Nhit = glm::vec3(0, 1, 0);
     }
 
 
     void TriangleMesh::triangulateMesh (
         const int numFaces,
-        int* faceIndex,
-        int* vertsIndex,
-        glm::vec3* verts,
-        int numVerts)
+        std::vector<int> &faceIndex,
+        std::vector<int> &vertsIndex,
+        std::vector<int> &normalIndex,
+        std::vector<glm::vec3> &verts,
+        std::vector<glm::vec3> &norms,
+        int numVerts,
+        int numNorms)
     {
         int numTris = 0;
+
         for (int i = 0; i < numFaces; i++) {
             numTris += faceIndex[i] - 2;
         }
 
+
         glm::vec3 minBounds(INFINITY, INFINITY, INFINITY);
         glm::vec3 maxBounds(-INFINITY, -INFINITY, -INFINITY);
 
-        verticies = std::unique_ptr<glm::vec3[]>(new glm::vec3[numVerts]);
-        for (int i = 0; i < numVerts; i++) {
-            verticies[i] = verts[i];
-
+        
+        
+        for (int i = 0; i < numVerts; i++) {         
             minBounds.x = std::min(minBounds.x, verts[i].x);
             maxBounds.x = std::max(maxBounds.x, verts[i].x);
             minBounds.y = std::min(minBounds.y, verts[i].y);
@@ -216,15 +231,19 @@ Object::Object() {}
             minBounds.z = std::min(minBounds.z, verts[i].z);
             maxBounds.z = std::max(maxBounds.z, verts[i].z);
         }
-        bounding = BoundingBox(minBounds.x, maxBounds.x, minBounds.y, maxBounds.y, minBounds.z, maxBounds.z);
 
-        trisIndex = std::unique_ptr<int[]>(new int[numTris * 3]);
+        bounding = BoundingBox(minBounds.x, maxBounds.x, minBounds.y, maxBounds.y, minBounds.z, maxBounds.z, glm::vec3(.8,.8,.8), 0);
+
         int l = 0;
         for (int i = 0, k = 0; i < numFaces; i++) {
             for (int j = 0; j < faceIndex[i] - 2; j++) {
-                trisIndex[l] = vertsIndex[k];
-                trisIndex[l + 1] = vertsIndex[k + j + 1];
-                trisIndex[l + 2] = vertsIndex[k + j + 2];
+                trisIndex.push_back(vertsIndex[k]);
+                trisIndex.push_back(vertsIndex[k + j + 1]);
+                trisIndex.push_back(vertsIndex[k + j + 2]);
+
+                normIndex.push_back(vertsIndex[k]);
+                normIndex.push_back(vertsIndex[k + j + 1]);
+                normIndex.push_back(vertsIndex[k + j + 2]);
                 l += 3;
             }
             k += faceIndex[i];
@@ -232,16 +251,21 @@ Object::Object() {}
 
         this->numTris = numTris;
         this->color = glm::vec3(255, 0, 255);
+        this->verticies = std::vector<glm::vec3>(verts);
+        this->normals = std::vector<glm::vec3>(norms);
     }
 
-    TriangleMesh::TriangleMesh(std::string file) {
+    TriangleMesh::TriangleMesh(std::string file, glm::vec3 albedo, int surfaceType) {
+        this->albedo = albedo;
+        this->surfaceType = surfaceType;
+
         std::ifstream ifs;
-        
         ifs.open(file);
         std::string line;
 
         std::vector<int> numOfVerts;
         std::vector<int> vertexIndex;
+        std::vector<int> normalIndex;
         std::vector<glm::vec3> verticies;
         std::vector<glm::vec3> vertexNorm;
         std::vector<glm::vec3> vertexTex;
@@ -251,7 +275,14 @@ Object::Object() {}
                 if (line.length() == 0) {
                     continue;
                 }
-                if (line.at(0) == 'v') {
+                if (line.substr(0, 2).compare("vn") == 0) {
+                    std::stringstream ss(line.substr(3));
+                    float x, y, z;
+                    ss >> x; ss >> y; ss >> z;
+                    glm::vec3 norm(x, y, z);
+                    vertexNorm.push_back(norm);
+                }
+                else if (line.at(0) == 'v') {
                     std::stringstream ss(line.substr(2));
                     float x, y, z;
                     ss >> x; ss >> y; ss >> z;
@@ -271,6 +302,7 @@ Object::Object() {}
                         sscanf_s(chh, "%i/%i/%i", &a, &b, &c);
                         a--; b--; c--;
                         vertexIndex.push_back(a);
+                        normalIndex.push_back(c);
                         vertsNum++;
                     }
                     numOfVerts.push_back(vertsNum);
@@ -281,7 +313,7 @@ Object::Object() {}
             std::cout << "It Failed" << std::endl;
         }
 
-        triangulateMesh(numOfVerts.size(), &numOfVerts[0], &vertexIndex[0], &verticies[0], verticies.size());
+        triangulateMesh(numOfVerts.size(), numOfVerts, vertexIndex, normalIndex, verticies, vertexNorm, verticies.size(), vertexNorm.size());
     }
 
     bool TriangleMesh::intersectTriangle(const glm::vec3& orig, const glm::vec3& dir, float& dist, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, bool& edge) const {
@@ -315,11 +347,12 @@ Object::Object() {}
         return true;
     }
 
-    bool TriangleMesh::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) const {
+    bool TriangleMesh::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist) {
         bool edge = false;
         float nDist = INFINITY;
         bool hit = false;
         float test;
+        int hitTriangle = -1;
         if (!bounding.intersect(orig, dir, test)) {
             return false;
         }
@@ -330,15 +363,18 @@ Object::Object() {}
                 if (currDist > 0 && currDist < nDist) {
                     nDist = currDist;
                     hit = true;
+                    hitTriangle = i;
                     edge = currentEdge;
                 }
             }
         }
+        lastHitTri = hitTriangle;
         dist = nDist;
-        return !edge && hit;
+        //return !edge && hit;
+        return hit;
     }
     void TriangleMesh::getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const {
-        Nhit = glm::vec3(0, 1, 0);
+        Nhit = normals[normIndex[lastHitTri * 3]];
         tex.x = 0;
         tex.y = 1.9;
     }
