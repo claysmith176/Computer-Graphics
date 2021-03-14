@@ -99,8 +99,6 @@ glm::vec3 castRay(glm::vec3 dir, glm::vec3 origin, int depth) {
         glm::vec3 cObject = objects[hitObject]->color;
         glm::vec3 hitColor(0,0,0);
 
-        //float mixValue = (fmodf(tex.x * 2, 1) > 0.5) ^ (fmodf(tex.y * 2, 1) > 0.5);
-        //glm::vec3 hitColor = cWhite* (1 - mixValue) + cObject * mixValue;
         if (objects[hitObject]->surfaceType == 0) {
             for (int j = 0; j < lights.size(); j++) {
                 bool vis = true;
@@ -145,21 +143,25 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 cent
 
     for (int i = 0; i < iHeight; i++) {
         for (int j = 0; j < iWidth; j++) {
-            if (i == 285 && j == 289) {
-                int name = 43;
+            if (i == 400 && j == 430) {
+                int test45 = 5;
             }
+            glm::vec3 colorVector(0, 0, 0);
+            for (int k = 0; k < 4; k++) {
+                float val1 = (.25 + (.5 * (k / 2)));
+                float val2 = (.25 + (.5 * (k % 2)));
+                float px = (2 * (j + val1) / (float)iWidth - 1) * scale * aspectRatio;
+                float py = (1 - 2 * (i + val2) / (float)iHeight) * scale;
 
-            float px = (2 * (j + 0.5) / (float)iWidth-1) * scale * aspectRatio;
-            float py = (1 - 2 * (i + 0.5) / (float)iHeight) * scale;
-            
-            glm::vec4 dirH(px, py, -1, 1);
-            dirH = camera2World * dirH;
-            glm::vec3 dir(dirH.x / dirH.w, dirH.y / dirH.w, dirH.z / dirH.w);
+                glm::vec4 dirH(px, py, -1, 1);
+                dirH = camera2World * dirH;
+                glm::vec3 dir(dirH.x / dirH.w, dirH.y / dirH.w, dirH.z / dirH.w);
 
-            dir = dir - origin;
-            dir = glm::normalize(dir);
-            
-            glm::vec3 colorVector = castRay(dir, origin, 0);
+                dir = dir - origin;
+                dir = glm::normalize(dir);
+                colorVector = colorVector + castRay(dir, origin, 0);
+            }
+            colorVector /= glm::vec3(4,4,4);
             color c;
             c.r = (unsigned char)colorVector.x;
             c.g = (unsigned char)colorVector.y;
@@ -181,40 +183,42 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 cent
 
 int main()
 {
+    //objects.push_back(new TriangleMesh("Objects/fox.obj", glm::vec3(.8, .8, .8), 0));
     objects.push_back(new Sphere(glm::vec3(0, 3, 0), glm::vec3(192, 192, 192), 3, glm::vec3(.5, .5, .5), 0));
     objects.push_back(new TriangleMesh("Objects/flatPlane.obj", glm::vec3(.5,.5,.5), 1));
-    objects.push_back(new TriangleMesh("Objects/rightPlane.obj", glm::vec3(.5, .5, .5), 1));
+    /*objects.push_back(new TriangleMesh("Objects/rightPlane.obj", glm::vec3(.5, .5, .5), 1));
     objects.push_back(new TriangleMesh("Objects/leftPlane.obj", glm::vec3(.5, .5, .5), 1));
     objects.push_back(new TriangleMesh("Objects/backPlane.obj", glm::vec3(.5, .5, .5), 1));
-    objects.push_back(new TriangleMesh("Objects/frontPlane.obj", glm::vec3(.5, .5, .5), 1));
+    objects.push_back(new TriangleMesh("Objects/frontPlane.obj", glm::vec3(.5, .5, .5), 1)); */
 
     lights.push_back(new DistantLight(glm::vec3(0, -1, -1), glm::vec3(255, 255, 255), 3));
-    lights.push_back(new DistantLight(glm::vec3(0, -1, 1), glm::vec3(255, 255, 255), 3));
+    //lights.push_back(new DistantLight(glm::vec3(0, -1, 1), glm::vec3(255, 255, 255), 3));
+    //lights.push_back(new DistantLight(glm::vec3(1, -1, 0), glm::vec3(255, 255, 255), 3));
+    lights.push_back(new DistantLight(glm::vec3(-1, -1, 0), glm::vec3(255, 255, 255), 3));
 
     std::cout << "Loaded" << std::endl;
 
-    glm::vec3 eye(0, 3, 9);
-    glm::vec3 center(0, 10, 0);
+    glm::vec3 eye(10, 3, 0);
+    glm::vec3 center(0, 0, 0);
     glm::vec3 up(0, 1, 0);
     const float FOV = 120;
     auto startTime = chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < 360; i++) {
+    /*for (int i = 0; i < 360; i++) {
         auto renderStart = chrono::high_resolution_clock::now();
         render(853, 480, FOV, eye, center, up, std::to_string(i));
         auto renderStop = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::milliseconds>(renderStop - renderStart);
         std::cout << (int)duration.count() / 1000 << "." << duration.count() % 1000 << " Seconds" << std::endl;
         eye = left(1, eye, glm::vec3(0, 1, 0));
-    }
+    } */
 
     auto endTime = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(endTime - startTime);
     std::cout << "Total Time "<< ((int)duration.count() / 1000) / 60 << ":" << ((int)duration.count() / 1000) % 60 << "." << duration.count() % 1000  << std::endl;
 
-    //render(853, 480, FOV, eye, center, up, "out.ppm");
-    for (int i = 0; i < objectNumber; i++) {
+    render(853, 480, FOV, eye, center, up, "out.ppm");
+    for (int i = 0; i < objects.size(); i++) {
         delete objects[i];
     }
-
 }

@@ -205,7 +205,7 @@ Object::Object() {}
         const int numFaces,
         std::vector<int> &faceIndex,
         std::vector<int> &vertsIndex,
-        std::vector<int> &normalIndex,
+        std::vector<int> &polyNormalIndex,
         std::vector<glm::vec3> &verts,
         std::vector<glm::vec3> &norms,
         int numVerts,
@@ -217,13 +217,10 @@ Object::Object() {}
             numTris += faceIndex[i] - 2;
         }
 
-
         glm::vec3 minBounds(INFINITY, INFINITY, INFINITY);
         glm::vec3 maxBounds(-INFINITY, -INFINITY, -INFINITY);
-
         
-        
-        for (int i = 0; i < numVerts; i++) {         
+        for (int i = 0; i < numVerts; i++) {      
             minBounds.x = std::min(minBounds.x, verts[i].x);
             maxBounds.x = std::max(maxBounds.x, verts[i].x);
             minBounds.y = std::min(minBounds.y, verts[i].y);
@@ -233,6 +230,7 @@ Object::Object() {}
         }
 
         bounding = BoundingBox(minBounds.x, maxBounds.x, minBounds.y, maxBounds.y, minBounds.z, maxBounds.z, glm::vec3(.8,.8,.8), 0);
+        std::vector<int> triNormsIndex;
 
         int l = 0;
         for (int i = 0, k = 0; i < numFaces; i++) {
@@ -241,9 +239,9 @@ Object::Object() {}
                 trisIndex.push_back(vertsIndex[k + j + 1]);
                 trisIndex.push_back(vertsIndex[k + j + 2]);
 
-                normIndex.push_back(vertsIndex[k]);
-                normIndex.push_back(vertsIndex[k + j + 1]);
-                normIndex.push_back(vertsIndex[k + j + 2]);
+                normIndex.push_back(polyNormalIndex[k]);
+                normIndex.push_back(polyNormalIndex[k + j + 1]);
+                normIndex.push_back(polyNormalIndex[k + j + 2]);
                 l += 3;
             }
             k += faceIndex[i];
@@ -265,7 +263,7 @@ Object::Object() {}
 
         std::vector<int> numOfVerts;
         std::vector<int> vertexIndex;
-        std::vector<int> normalIndex;
+        std::vector<int> polyNormalIndex;
         std::vector<glm::vec3> verticies;
         std::vector<glm::vec3> vertexNorm;
         std::vector<glm::vec3> vertexTex;
@@ -299,10 +297,10 @@ Object::Object() {}
                         }
                         int a, b, c;
                         const char* chh = values.c_str();
-                        sscanf_s(chh, "%i/%i/%i", &a, &b, &c);
+                        sscanf_s(chh, "%i//%i", &a, &b, &c);
                         a--; b--; c--;
                         vertexIndex.push_back(a);
-                        normalIndex.push_back(c);
+                        polyNormalIndex.push_back(b);
                         vertsNum++;
                     }
                     numOfVerts.push_back(vertsNum);
@@ -313,10 +311,10 @@ Object::Object() {}
             std::cout << "It Failed" << std::endl;
         }
 
-        triangulateMesh(numOfVerts.size(), numOfVerts, vertexIndex, normalIndex, verticies, vertexNorm, verticies.size(), vertexNorm.size());
+        triangulateMesh(numOfVerts.size(), numOfVerts, vertexIndex, polyNormalIndex, verticies, vertexNorm, verticies.size(), vertexNorm.size());
     }
 
-    bool TriangleMesh::intersectTriangle(const glm::vec3& orig, const glm::vec3& dir, float& dist, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, bool& edge) const {
+    bool TriangleMesh::intersectTriangle(const glm::vec3& orig, const glm::vec3& dir, float& dist, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, bool& edge, float &u, float &v) const {
         glm::vec3 v0v1 = (v1 - v0);
         glm::vec3 v0v2 = (v2 - v0);
         glm::vec3 pvec = glm::cross(dir, v0v2);
@@ -324,13 +322,13 @@ Object::Object() {}
         float invDet = 1 / det;
 
         glm::vec3 tvec = orig - v0;
-        float u = glm::dot(tvec, pvec) * invDet;
+        u = glm::dot(tvec, pvec) * invDet;
         if (u < 0 || u > 1) {
             return false;
         }
 
         glm::vec3 qvec = glm::cross(tvec, v0v1);
-        float v = glm::dot(qvec, dir) * invDet;
+        v = glm::dot(qvec, dir) * invDet;
         if (v < 0 || u + v > 1) {
             return false;
         }
@@ -359,11 +357,14 @@ Object::Object() {}
         for (int i = 0; i < numTris; i++) {
             float currDist = INFINITY;
             bool currentEdge = false;
-            if (intersectTriangle(orig, dir, currDist, verticies[trisIndex[3 * i]], verticies[trisIndex[3 * i + 1]], verticies[trisIndex[3 * i + 2]], currentEdge)) {
+            float u, v;
+            if (intersectTriangle(orig, dir, currDist, verticies[trisIndex[3 * i]], verticies[trisIndex[3 * i + 1]], verticies[trisIndex[3 * i + 2]], currentEdge, u, v)) {
                 if (currDist > 0 && currDist < nDist) {
                     nDist = currDist;
                     hit = true;
                     hitTriangle = i;
+                    lastHitU = u;
+                    lastHitV = v;
                     edge = currentEdge;
                 }
             }
@@ -374,7 +375,12 @@ Object::Object() {}
         return hit;
     }
     void TriangleMesh::getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const {
-        Nhit = normals[normIndex[lastHitTri * 3]];
+        glm::vec3 n0 = normals[normIndex[lastHitTri * 3]];
+        glm::vec3 n1 = normals[normIndex[lastHitTri * 3 + 1]];
+        glm::vec3 n2 = normals[normIndex[lastHitTri * 3 + 2]];
+        Nhit = lastHitU * n0 + lastHitV * n1 + (1 - lastHitU - lastHitV) * n2;
+
+        //Nhit = normals[normIndex[lastHitTri * 3]];
         tex.x = 0;
         tex.y = 1.9;
     }

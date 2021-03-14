@@ -70,6 +70,8 @@ class TriangleMesh : public Object {
 public:
     int numTris;
     int lastHitTri;
+    float lastHitU;
+    float lastHitV;
     std::vector<int> trisIndex;
     std::vector<glm::vec3> verticies;
     std::vector<int> normIndex;
@@ -87,7 +89,7 @@ public:
         int numNorms);
 
     TriangleMesh(std::string fil, glm::vec3 albede, int surfaceType);
-    bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir, float& dist, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, bool& edge) const;
+    bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir, float& dist, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, bool& edge, float &u, float &v) const;
     bool intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist);
     void getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const;
 };
