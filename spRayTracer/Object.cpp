@@ -84,9 +84,6 @@ Object::Object() {}
             glm::vec3 p0l0 = center - orig;
             float num = glm::dot(p0l0, normal);
             dist = num / denom;
-            if (dist > 0) {
-                int adc = 5;
-            }
             return true;
         }
         return false;
@@ -280,6 +277,7 @@ Object::Object() {}
                     glm::vec3 norm(x, y, z);
                     vertexNorm.push_back(norm);
                 }
+                else if (line.substr(0, 2).compare("vt") == 0) {}
                 else if (line.at(0) == 'v') {
                     std::stringstream ss(line.substr(2));
                     float x, y, z;
@@ -291,20 +289,34 @@ Object::Object() {}
                     std::stringstream ss(line.substr(2));
                     std::string values;
                     int vertsNum = 0;
+
                     while (std::getline(ss, values, ' ')) {
-                        if (values.length() == 0) {
-                            continue;
-                        }
+                        std::string delimiter = "/";
+                        size_t pos = 0;
+                        std::string token;
                         int a, b, c;
-                        const char* chh = values.c_str();
-                        sscanf_s(chh, "%i//%i", &a, &b, &c);
-                        a--; b--; c--;
+                        int index = 0;
+
+                        while ((pos = values.find(delimiter)) != std::string::npos) {                            
+                            token = values.substr(0, pos);
+                            if (token.length() != 0) {
+                                int test = std::stoi(token);
+                                if (index == 0) { a = test -1; }
+                                else if (index == 1) { b = test -1; }
+                            }
+                            values.erase(0, pos + delimiter.length());
+                            index++;
+                        }
+                        if (values.length() != 0) {
+                            c = std::stoi(values) -1;
+                        }
                         vertexIndex.push_back(a);
-                        polyNormalIndex.push_back(b);
+                        polyNormalIndex.push_back(c);
                         vertsNum++;
                     }
                     numOfVerts.push_back(vertsNum);
                 }
+                
             }
         }
         catch (int e) {
@@ -374,12 +386,15 @@ Object::Object() {}
         //return !edge && hit;
         return hit;
     }
+
     void TriangleMesh::getSurfaceData(const glm::vec3& Phit, glm::vec3& Nhit, glm::vec2& tex) const {
         glm::vec3 n0 = normals[normIndex[lastHitTri * 3]];
         glm::vec3 n1 = normals[normIndex[lastHitTri * 3 + 1]];
         glm::vec3 n2 = normals[normIndex[lastHitTri * 3 + 2]];
         Nhit = lastHitU * n0 + lastHitV * n1 + (1 - lastHitU - lastHitV) * n2;
-
+        Nhit.x = lastHitU * n0.x + lastHitV * n1.x + (1 - lastHitU - lastHitV) * n2.x;
+        Nhit.y = lastHitU * n0.y + lastHitV * n1.y + (1 - lastHitU - lastHitV) * n2.y;
+        Nhit.z = lastHitU * n0.z + lastHitV * n1.z + (1 - lastHitU - lastHitV) * n2.z;
         //Nhit = normals[normIndex[lastHitTri * 3]];
         tex.x = 0;
         tex.y = 1.9;

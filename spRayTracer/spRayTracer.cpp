@@ -130,6 +130,24 @@ glm::vec3 castRay(glm::vec3 dir, glm::vec3 origin, int depth) {
     return backgroundColor;
 }
 
+void printTri(TriangleMesh mesh) {
+    ofstream myfile;
+    myfile.open("example.obj");
+    for (glm::vec3 vert: mesh.verticies) {
+        myfile << "v " << vert.x << " " << vert.y << " " << vert.z << std::endl;
+    }
+    for (glm::vec3 vert : mesh.normals) {
+        myfile << "vn " << vert.x << " " << vert.y << " " << vert.z << std::endl;
+    }
+    for (int i = 0; i < mesh.numTris * 3; i= i +3) {
+        myfile << "f " << mesh.trisIndex[i]+1 << "//" << mesh.normIndex[i]+1 << " ";
+        myfile << mesh.trisIndex[i+1]+1 << "//" << mesh.normIndex[i+1]+1 << " ";
+        myfile << mesh.trisIndex[i+2]+1 << "//" << mesh.normIndex[i+2]+1 << " ";
+        myfile << std::endl;
+    }
+    myfile.close();
+}
+
 void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 center, glm::vec3 up, std::string name) {
 
     glm::mat4 camera2World = glm::inverse(glm::lookAt(origin, center, up));
@@ -142,6 +160,7 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 cent
     float scale = tan((FOV * (M_PI / 180))/2);
 
     for (int i = 0; i < iHeight; i++) {
+        std::cerr << "\rScanlines remaining: " << iHeight - i << ' ' << std::flush;
         for (int j = 0; j < iWidth; j++) {
             if (i == 400 && j == 430) {
                 int test45 = 5;
@@ -173,7 +192,7 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 cent
     std::cout << "Render " << name << " Done" << std::endl;
 
     std::ofstream ofs;
-    ofs.open("./Video/" + name + ".ppm", std::ios_base::out | std::ios_base::binary);
+    ofs.open("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Video/" + name + ".ppm", std::ios_base::out | std::ios_base::binary);
     ofs << "P6 " << iWidth << " " << iHeight << " 255 ";
     ofs.write((char*)frameBuffer, iHeight * iWidth * 3);
     ofs.close();
@@ -183,34 +202,42 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 cent
 
 int main()
 {
-    //objects.push_back(new TriangleMesh("Objects/fox.obj", glm::vec3(.8, .8, .8), 0));
-    objects.push_back(new Sphere(glm::vec3(0, 3, 0), glm::vec3(192, 192, 192), 3, glm::vec3(.5, .5, .5), 0));
+    //objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/fox_rotate.obj", glm::vec3(.8, .8, .8), 0));
+    //objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/foxPlane.obj", glm::vec3(.5, .5, .5), 0));
+    //objects.push_back(new Sphere(glm::vec3(0, 3, 0), glm::vec3(192, 192, 192), 3, glm::vec3(.5, .5, .5), 0));
     objects.push_back(new TriangleMesh("Objects/flatPlane.obj", glm::vec3(.5,.5,.5), 1));
     /*objects.push_back(new TriangleMesh("Objects/rightPlane.obj", glm::vec3(.5, .5, .5), 1));
     objects.push_back(new TriangleMesh("Objects/leftPlane.obj", glm::vec3(.5, .5, .5), 1));
     objects.push_back(new TriangleMesh("Objects/backPlane.obj", glm::vec3(.5, .5, .5), 1));
     objects.push_back(new TriangleMesh("Objects/frontPlane.obj", glm::vec3(.5, .5, .5), 1)); */
+    
+    objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/sphere.obj", glm::vec3(.5, .5, .5), 0));
 
-    lights.push_back(new DistantLight(glm::vec3(0, -1, -1), glm::vec3(255, 255, 255), 3));
+    //lights.push_back(new DistantLight(glm::vec3(0, -1, -1), glm::vec3(255, 255, 255), 3));
     //lights.push_back(new DistantLight(glm::vec3(0, -1, 1), glm::vec3(255, 255, 255), 3));
     //lights.push_back(new DistantLight(glm::vec3(1, -1, 0), glm::vec3(255, 255, 255), 3));
-    lights.push_back(new DistantLight(glm::vec3(-1, -1, 0), glm::vec3(255, 255, 255), 3));
+    lights.push_back(new DistantLight(glm::normalize(glm::vec3(0, -1, -1)), glm::vec3(255, 255, 255), 3));
 
     std::cout << "Loaded" << std::endl;
+    //printTri(TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/sphere.obj", glm::vec3(.5, .5, .5), 0));
 
-    glm::vec3 eye(10, 3, 0);
-    glm::vec3 center(0, 0, 0);
+    glm::vec3 eye(-5, 3, 5);
+    glm::vec3 center(0, 3, 0);
     glm::vec3 up(0, 1, 0);
     const float FOV = 120;
     auto startTime = chrono::high_resolution_clock::now();
 
-    /*for (int i = 0; i < 360; i++) {
+    /*for (int i = 170; i < 180; i++) {
+        glm::vec3 lightDir = glm::vec3(0, 0, -1) * rotate(i, glm::vec3(1, 0, 0));
+        lights.clear();
+        lights.push_back(new DistantLight(lightDir, glm::vec3(255, 255, 255), 3));
+
         auto renderStart = chrono::high_resolution_clock::now();
         render(853, 480, FOV, eye, center, up, std::to_string(i));
         auto renderStop = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::milliseconds>(renderStop - renderStart);
         std::cout << (int)duration.count() / 1000 << "." << duration.count() % 1000 << " Seconds" << std::endl;
-        eye = left(1, eye, glm::vec3(0, 1, 0));
+        //eye = left(1, eye, glm::vec3(0, 1, 0));
     } */
 
     auto endTime = chrono::high_resolution_clock::now();
