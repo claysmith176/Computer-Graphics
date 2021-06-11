@@ -1,8 +1,8 @@
 ﻿  spRayTracer.cpp
-C:\Users\smith\source\repos\Playground\spRayTracer\spRayTracer.cpp(15,9): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-C:\Users\smith\source\repos\Playground\spRayTracer\spRayTracer.cpp(62,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\smith\source\repos\Playground\spRayTracer\spRayTracer.cpp(65,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\smith\source\repos\Playground\spRayTracer\spRayTracer.cpp(100,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\smith\source\repos\Playground\spRayTracer\spRayTracer.cpp(108,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\smith\source\repos\Playground\spRayTracer\spRayTracer.cpp(109,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  spRayTracer.vcxproj -> C:\Users\smith\source\repos\Playground\Debug\spRayTracer.exe
+C:\Users\smith\source\repos\Computer-Graphics\spRayTracer\spRayTracer.cpp(15,9): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+C:\Users\smith\source\repos\Computer-Graphics\spRayTracer\spRayTracer.cpp(62,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Computer-Graphics\spRayTracer\spRayTracer.cpp(65,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Computer-Graphics\spRayTracer\spRayTracer.cpp(106,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Computer-Graphics\spRayTracer\spRayTracer.cpp(114,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\smith\source\repos\Computer-Graphics\spRayTracer\spRayTracer.cpp(115,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  spRayTracer.vcxproj -> C:\Users\smith\source\repos\Computer-Graphics\Debug\spRayTracer.exe
