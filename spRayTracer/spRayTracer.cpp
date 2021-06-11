@@ -204,6 +204,7 @@ int main()
 {
     //objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/fox_rotate.obj", glm::vec3(.8, .8, .8), 0));
     //objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/foxPlane.obj", glm::vec3(.5, .5, .5), 0));
+    objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/porous_sphere.obj", glm::vec3(.5, .5, .5), 0));
     //objects.push_back(new Sphere(glm::vec3(0, 3, 0), glm::vec3(192, 192, 192), 3, glm::vec3(.5, .5, .5), 0));
     objects.push_back(new TriangleMesh("Objects/flatPlane.obj", glm::vec3(.5,.5,.5), 1));
     /*objects.push_back(new TriangleMesh("Objects/rightPlane.obj", glm::vec3(.5, .5, .5), 1));
@@ -211,7 +212,7 @@ int main()
     objects.push_back(new TriangleMesh("Objects/backPlane.obj", glm::vec3(.5, .5, .5), 1));
     objects.push_back(new TriangleMesh("Objects/frontPlane.obj", glm::vec3(.5, .5, .5), 1)); */
     
-    objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/sphere.obj", glm::vec3(.5, .5, .5), 0));
+    //objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/sphere.obj", glm::vec3(.5, .5, .5), 0));
 
     //lights.push_back(new DistantLight(glm::vec3(0, -1, -1), glm::vec3(255, 255, 255), 3));
     //lights.push_back(new DistantLight(glm::vec3(0, -1, 1), glm::vec3(255, 255, 255), 3));
