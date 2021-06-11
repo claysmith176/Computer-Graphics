@@ -3,6 +3,7 @@
 #define _USE_MATH_DEFINES
 
 #include <iostream>
+#include <string>
 #include <stdlib.h>
 #include <cstdlib> 
 #include <cstdio> 
@@ -215,7 +216,7 @@ void createImage(glm::vec3 eye, glm::vec3 up, std::string name) {
 		v1Raster = computePixelCordinates(vWorld1, world2Camera, canvas_width, canvas_height, image_width, image_height);
 		v2Raster = computePixelCordinates(vWorld2, world2Camera, canvas_width, canvas_height, image_width, image_height);
 
-		std::cerr << glm::to_string(v0Raster) << ", 1  " << glm::to_string(v1Raster) << ", 2  " << glm::to_string(v2Raster) << std::endl;
+		//std::cerr << glm::to_string(v0Raster) << ", 1  " << std::to_string(v1Raster) << ", 2  " << std::to_string(v2Raster) << std::endl;
 		ofs << "<line x1=\"" << v0Raster.x << "\" y1=\"" << v0Raster.y << "\" x2=\"" << v1Raster.x << "\" y2=\"" << v1Raster.y << "\" style=\"stroke:rgb(0,0,0);stroke-width:1\" />\n";
 		ofs << "<line x1=\"" << v1Raster.x << "\" y1=\"" << v1Raster.y << "\" x2=\"" << v2Raster.x << "\" y2=\"" << v2Raster.y << "\" style=\"stroke:rgb(0,0,0);stroke-width:1\" />\n";
 		ofs << "<line x1=\"" << v2Raster.x << "\" y1=\"" << v2Raster.y << "\" x2=\"" << v0Raster.x << "\" y2=\"" << v0Raster.y << "\" style=\"stroke:rgb(0,0,0);stroke-width:1\" />\n";
@@ -235,10 +236,10 @@ void startAnimation() {
 }
 
  void main(int argc, char** argv) {
-	//startAnimation();
+	startAnimation();
 
 	std::ofstream ofs;
-	ofs.open(".//proj.svg");
+	ofs.open("./proj.svg");
 	ofs << "<svg version=\"1.1\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns=\"http://www.w3.org/2000/svg\" height=\"844\" width=\"1500\">" << std::endl;
 
 	glm::mat4 cameraToWorld(0.871214, 0, -0.490904, 0, -0.192902, 0.919559, -0.342346, 0, 0.451415, 0.392953, 0.801132, 0, 14.777467, 29.361945, 27.993464, 1);
@@ -256,7 +257,7 @@ void startAnimation() {
 	glm::vec3 test = left(22, glm::vec3(-10, 5, -10), glm::vec3(0, 1, 0));
 	glm::mat4 world2Camera = glm::lookAt(test, glm::vec3(0, 5, 0), glm::vec3(0, 1, 0));
 
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < numOfTris; i++) {
 		
 		glm::vec3 vWorld0 = (verts[tris[i * 3]]);
 		glm::vec3 vWorld1 = (verts[tris[i * 3 + 1]]);
@@ -267,7 +268,7 @@ void startAnimation() {
 		v1Raster = computePixelCordinates(vWorld1, world2Camera, canvas_width, canvas_height, image_width, image_height);
 		v2Raster = computePixelCordinates(vWorld2, world2Camera, canvas_width, canvas_height, image_width, image_height);
 	
-		std::cerr << glm::to_string(v0Raster) << ", 1  " << glm::to_string(v1Raster) << ", 2  " << glm::to_string(v2Raster) << std::endl;
+		//std::cerr << glm::to_string(v0Raster) << ", 1  " << glm::to_string(v1Raster) << ", 2  " << glm::to_string(v2Raster) << std::endl;
 		ofs << "<line x1=\"" << v0Raster.x << "\" y1=\"" << v0Raster.y << "\" x2=\"" << v1Raster.x << "\" y2=\"" << v1Raster.y << "\" style=\"stroke:rgb(0,0,0);stroke-width:1\" />\n";
 		ofs << "<line x1=\"" << v1Raster.x << "\" y1=\"" << v1Raster.y << "\" x2=\"" << v2Raster.x << "\" y2=\"" << v2Raster.y << "\" style=\"stroke:rgb(0,0,0);stroke-width:1\" />\n";
 		ofs << "<line x1=\"" << v2Raster.x << "\" y1=\"" << v2Raster.y << "\" x2=\"" << v0Raster.x << "\" y2=\"" << v0Raster.y << "\" style=\"stroke:rgb(0,0,0);stroke-width:1\" />\n";

@@ -1,0 +1,10 @@
+Video/
+VideoP/
+.vs/
+Debug/
+*.svg
+*.ppm
+*.png
+x64/
+Objects/
+*.obj

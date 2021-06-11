@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a4af60ec-1053-4087-99fc-54c9e1c470e1}</ProjectGuid>
-    <RootNamespace>spRayTracer</RootNamespace>
+    <ProjectGuid>{8b7ea1b9-c230-44e1-a593-834a6b62a5c9}</ProjectGuid>
+    <RootNamespace>peteRayTracer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -139,13 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Object.cpp" />
-    <ClCompile Include="Light.cpp" />
-    <ClCompile Include="spRayTracer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Light.h" />
-    <ClInclude Include="Object.h" />
+    <ClCompile Include="peteRayTracer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
