@@ -32,11 +32,6 @@ struct color {
     unsigned char b;
 };
 
-struct Circle {
-    glm::vec3 center;
-    float radius;
-    color c;
-};
 
 const int objectNumber = 3;
 vector<Object*> objects;
@@ -130,24 +125,6 @@ glm::vec3 castRay(glm::vec3 dir, glm::vec3 origin, int depth) {
     return backgroundColor;
 }
 
-void printTri(TriangleMesh mesh) {
-    ofstream myfile;
-    myfile.open("example.obj");
-    for (glm::vec3 vert: mesh.verticies) {
-        myfile << "v " << vert.x << " " << vert.y << " " << vert.z << std::endl;
-    }
-    for (glm::vec3 vert : mesh.normals) {
-        myfile << "vn " << vert.x << " " << vert.y << " " << vert.z << std::endl;
-    }
-    for (int i = 0; i < mesh.numTris * 3; i= i +3) {
-        myfile << "f " << mesh.trisIndex[i]+1 << "//" << mesh.normIndex[i]+1 << " ";
-        myfile << mesh.trisIndex[i+1]+1 << "//" << mesh.normIndex[i+1]+1 << " ";
-        myfile << mesh.trisIndex[i+2]+1 << "//" << mesh.normIndex[i+2]+1 << " ";
-        myfile << std::endl;
-    }
-    myfile.close();
-}
-
 void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 center, glm::vec3 up, std::string name) {
 
     glm::mat4 camera2World = glm::inverse(glm::lookAt(origin, center, up));
@@ -162,9 +139,6 @@ void render(int iWidth, int iHeight, float FOV, glm::vec3 origin, glm::vec3 cent
     for (int i = 0; i < iHeight; i++) {
         std::cerr << "\rScanlines remaining: " << iHeight - i << ' ' << std::flush;
         for (int j = 0; j < iWidth; j++) {
-            if (i == 400 && j == 430) {
-                int test45 = 5;
-            }
             glm::vec3 colorVector(0, 0, 0);
             for (int k = 0; k < 4; k++) {
                 float val1 = (.25 + (.5 * (k / 2)));
@@ -204,9 +178,9 @@ int main()
 {
     //objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/fox_rotate.obj", glm::vec3(.8, .8, .8), 0));
     //objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/foxPlane.obj", glm::vec3(.5, .5, .5), 0));
-    objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/porous_sphere.obj", glm::vec3(.5, .5, .5), 0));
-    //objects.push_back(new Sphere(glm::vec3(0, 3, 0), glm::vec3(192, 192, 192), 3, glm::vec3(.5, .5, .5), 0));
-    objects.push_back(new TriangleMesh("Objects/flatPlane.obj", glm::vec3(.5,.5,.5), 1));
+    //objects.push_back(new TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/porous_sphere.obj", glm::vec3(.5, .5, .5), 0));
+    objects.push_back(new Sphere(glm::vec3(0, 0, -5), glm::vec3(192, 192, 192), 3, glm::vec3(.5, .5, .5), 0));
+    //objects.push_back(new TriangleMesh("Objects/flatPlane.obj", glm::vec3(.5,.5,.5), 1));
     /*objects.push_back(new TriangleMesh("Objects/rightPlane.obj", glm::vec3(.5, .5, .5), 1));
     objects.push_back(new TriangleMesh("Objects/leftPlane.obj", glm::vec3(.5, .5, .5), 1));
     objects.push_back(new TriangleMesh("Objects/backPlane.obj", glm::vec3(.5, .5, .5), 1));
@@ -220,10 +194,9 @@ int main()
     lights.push_back(new DistantLight(glm::normalize(glm::vec3(0, -1, -1)), glm::vec3(255, 255, 255), 3));
 
     std::cout << "Loaded" << std::endl;
-    //printTri(TriangleMesh("C:/Users/smith/source/repos/Computer-Graphics/spRayTracer/Objects/sphere.obj", glm::vec3(.5, .5, .5), 0));
 
-    glm::vec3 eye(-5, 3, 5);
-    glm::vec3 center(0, 3, 0);
+    glm::vec3 eye(0, 0, 0);
+    glm::vec3 center(0, 0, -1);
     glm::vec3 up(0, 1, 0);
     const float FOV = 120;
     auto startTime = chrono::high_resolution_clock::now();

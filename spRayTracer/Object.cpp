@@ -28,7 +28,6 @@ Object::Object() {}
     }
 
     bool Sphere::intersect(const glm::vec3& orig, const glm::vec3& dir, float& dist)
-    
     {
         float x0, x1;
         glm::vec3 test = center;

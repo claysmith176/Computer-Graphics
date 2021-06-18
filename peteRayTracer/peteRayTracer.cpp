@@ -11,62 +11,72 @@
 #include <chrono>
 
 #include <GL/glm/glm.hpp>
-#include <GL/glm/vec3.hpp>;
 #include <GL/glm/vec3.hpp> // glm::vec3
 #include <GL/glm/vec4.hpp> // glm::vec4
 #include <GL/glm/mat4x4.hpp> // glm::mat4
 #include <GL/glm/gtc/matrix_transform.hpp>
 #include "GL/glm/ext.hpp"
 
-class ray {
-public:
-    ray() {}
-    ray(glm::vec3 origin, glm::vec3 direction) 
-        : orig_(origin), direction_(direction) {}
+#include "Ray.h"
+#include "Camera.h"
+#include "Sphere.h"
+#include "Hittable.h"
 
-    glm::vec3 origin() const { return orig_; }
-    glm::vec3 dir() const { return direction_; }
+std::vector<Sphere*> objs;
+double t_min = 0;
+double t_max = 1000000;
 
-    glm::vec3 at(float t) {
-        return orig_ + t * direction_;
-    }
-private:
-    glm::vec3 orig_ = glm::vec3(0,0,0);
-    glm::vec3 direction_ = glm::vec3(0,0,0);
+struct color {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
 };
 
-void render(float iWidth, float iHeight, float FOV, glm::vec3 origin, glm::vec3 center, glm::vec3 up, std::string name) {
-    glm::mat4 camera2World = glm::inverse(glm::lookAt(origin, center, up));
-    glm::vec3 w = glm::normalize(origin - center);
-    glm::vec3 u = glm::normalize(glm::cross(up, w));
-    glm::vec3 v = glm::cross(w, u);
+glm::vec3 cast_ray(const Ray& r) {
+    hit_data rec;
 
-    glm::vec3* frameBuffer = new glm::vec3[iHeight * iWidth];
+    for (int i = 0; i < objs.size(); i++) {
+        if (objs[i]->hit(r, t_min, t_max, rec)) {
+            return glm::vec3(255, 0, 0);
+        }
+    }
+    float y = r.dir().y;
+    float t = ((y + 1) / 2);
+    return (1.0 - t)* glm::vec3(0, 0, 255) + t * glm::vec3(128, 128, 128);
+}
+
+void render(float iWidth, float iHeight, Camera cam, std::string name) {
+    color* frameBuffer = new color[iHeight * iWidth];
     for (int i = 0; i < iWidth * iHeight; i++) {
         frameBuffer[i] = { 0,0,0 };
     }
 
-
-
-    float aspect = iWidth / iHeight;
-    float left = std::tanf((FOV/2) * (M_PI/180));
-    float top = left / aspect;
-    
-    glm::vec3 horizontal = glm::vec3(2*left, 0,0 ) * u;
-    glm::vec3 vertical = glm::vec3(0, 2 * top, 0) * v;
-
-    glm::vec3 bot_left_corner = origin - horizontal/2.0f - vertical/2.0f- w;
-
     for (int i = 0; i < iHeight; i++) {
         for (int j = 0; j < iWidth; j++) {
-            glm::vec3 dir = bot_left_corner + vertical * (float(i) / iHeight) + horizontal * (float(j) / iWidth) - origin;
-            ray r(origin, glm::normalize(dir));
-
+            Ray r = cam.get_ray(float(j) / (iWidth - 1), float(i) / (iHeight - 1));
+            glm::vec3 colorVector = cast_ray(r);
+            int thing = i * iWidth + j;
+            color c;
+            c.r = (unsigned char)colorVector.x;
+            c.g = (unsigned char)colorVector.y;
+            c.b = (unsigned char)colorVector.z;
+            frameBuffer[thing] = c;
         }
+        std::cout << std::endl;
     }
+
+    std::ofstream ofs;
+    ofs.open("C:/Users/smith/source/repos/Computer-Graphics/peteRayTracer/Video/" + name + ".ppm", std::ios_base::out | std::ios_base::binary);
+    ofs << "P6 " << iWidth << " " << iHeight << " 255 ";
+    ofs.write((char*)frameBuffer, iHeight * iWidth * 3);
+    ofs.close();
+    delete[] frameBuffer;
+
 }
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    objs.push_back(new Sphere(glm::vec3(0, 0, -5), 3));
+    Camera cam = Camera(120, 16.0f / 9.0f, glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+    render(853, 480, cam, "out");
 }
