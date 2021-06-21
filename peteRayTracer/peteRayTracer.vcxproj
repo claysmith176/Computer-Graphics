@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Hittable.h" />
+    <ClInclude Include="Hittable_List.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Sphere.h" />
   </ItemGroup>

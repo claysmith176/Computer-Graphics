@@ -21,10 +21,13 @@
 #include "Camera.h"
 #include "Sphere.h"
 #include "Hittable.h"
+#include "Hittable_List.h"
 
-std::vector<Sphere*> objs;
-double t_min = 0;
-double t_max = 1000000;
+Hittable_List world;
+const double t_min = 0;
+const double t_max = 1000000;
+const int samples_per_pixel = 100;
+const int max_depth = 4;
 
 struct color {
     unsigned char r;
@@ -32,16 +35,55 @@ struct color {
     unsigned char b;
 };
 
-glm::vec3 cast_ray(const Ray& r) {
+void print_vec(glm::vec3 vec) {
+    std::cout << vec.x << ", " << vec.y << ", " << vec.z << std::endl;
+}
+
+glm::vec3 write_color(glm::vec3 color) {
+    float scale = 1.0f / (samples_per_pixel * 255);
+    color *= scale;
+
+    // gamma correction
+    glm::vec3 new_color(std::sqrtf(color.x), std::sqrtf(color.y), std::sqrtf(color.z));
+    return new_color * 255.0f;
+}
+
+float random_float() {
+    return (float)rand() / (RAND_MAX + 1.0);
+}
+
+float random_float(float min, float max) {
+    // Returns a random real in [min,max).
+    return min + (max - min) * random_float();
+}
+
+glm::vec3 random_unit_sphere() {
+    while (true) {
+        glm::vec3 vec(random_float(-1, 1), random_float(-1, 1), random_float(-1, 1));
+        if (glm::dot(vec, vec) <= 1) {
+            return vec;
+        }
+    }
+}
+
+
+glm::vec3 cast_ray(const Ray& r, int depth) {
     hit_data rec;
 
-    for (int i = 0; i < objs.size(); i++) {
-        if (objs[i]->hit(r, t_min, t_max, rec)) {
-            return glm::vec3(255, 0, 0);
-        }
+    if (depth == 0) {
+        return glm::vec3(0, 0, 0);
+    }
+    if (world.hit(r, 0.001, t_max, rec)) {
+        glm::vec3 tangent = rec.point + rec.normal + random_unit_sphere();
+        glm::vec3 test = tangent - rec.point;
+        return 0.5 * cast_ray(Ray(rec.point, glm::normalize(tangent - rec.point)), depth - 1);
+
+        //return glm::vec3(255, 255, 255) * (glm::dot(rec.normal, r.dir()) * -1);
     }
     float y = r.dir().y;
     float t = ((y + 1) / 2);
+    //return glm::vec3(200, 200, 200);
+    return (1.0 - t) * glm::vec3(255, 255, 255) + t * glm::vec3(127, 178, 255);
     return (1.0 - t)* glm::vec3(0, 0, 255) + t * glm::vec3(128, 128, 128);
 }
 
@@ -53,16 +95,22 @@ void render(float iWidth, float iHeight, Camera cam, std::string name) {
 
     for (int i = 0; i < iHeight; i++) {
         for (int j = 0; j < iWidth; j++) {
-            Ray r = cam.get_ray(float(j) / (iWidth - 1), float(i) / (iHeight - 1));
-            glm::vec3 colorVector = cast_ray(r);
-            int thing = i * iWidth + j;
+            if ( i == 178 && j == 197) {
+                int tqe = 4;
+            }
+            glm::vec3 colorVector;
+            for (int a = 0; a < samples_per_pixel; a++) {
+                Ray r = cam.get_ray(float(j + random_float()) / (iWidth - 1), float(i + random_float()) / (iHeight - 1));
+                colorVector += cast_ray(r, max_depth);
+            }
+            colorVector = write_color(colorVector);
             color c;
+            int thing = i * iWidth + j;
             c.r = (unsigned char)colorVector.x;
             c.g = (unsigned char)colorVector.y;
             c.b = (unsigned char)colorVector.z;
             frameBuffer[thing] = c;
         }
-        std::cout << std::endl;
     }
 
     std::ofstream ofs;
@@ -76,7 +124,11 @@ void render(float iWidth, float iHeight, Camera cam, std::string name) {
 
 int main()
 {
-    objs.push_back(new Sphere(glm::vec3(0, 0, -5), 3));
+    srand(static_cast <unsigned> (time(0)));
+
+    world.add(std::make_shared<Sphere>(glm::vec3(0, 0, -1), 0.5));
+    world.add(std::make_shared<Sphere>(glm::vec3(0, -100.5, -1), 100));
+
     Camera cam = Camera(120, 16.0f / 9.0f, glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
-    render(853, 480, cam, "out");
+    render(400, 224, cam, "out");
 }
