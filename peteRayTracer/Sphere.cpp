@@ -1,6 +1,6 @@
 #include "Sphere.h"
 
-Sphere::Sphere(glm::vec3 cen, float rad) : center(cen), radius(rad) {
+Sphere::Sphere(glm::vec3 cen, float rad, std::shared_ptr<Material> mat) : center(cen), radius(rad), mat_ptr(mat) {
 	radius2 = radius * radius;
 }
 
@@ -25,6 +25,7 @@ bool Sphere::hit(const Ray& r, double t_min, double t_max, hit_data& rec) const 
 
 	rec.dist = x;
 	rec.point = r.at(x);
+	rec.mat_ptr = mat_ptr;
 	glm::vec3 out_normal = (rec.point - center) / radius;
 	rec.set_face_normal(r, out_normal);
 	return true;
