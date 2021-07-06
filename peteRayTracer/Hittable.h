@@ -16,48 +16,11 @@ struct hit_data {
 
 class Hittable {
 public:
-	virtual bool hit(const Ray& r, double t_min, double t_max, hit_data& rec) const = 0;
+	virtual bool hit(const Ray& r, float t_min, float t_max, hit_data& rec) const = 0;
+    virtual bool bounding_box(float time0, float time1, aabb& output_box) const = 0;
 };
 
 
-class Sphere : public Hittable {
-public:
-	Sphere(vec3 cen, float rad, std::shared_ptr<Material> mat) : center(cen), radius(rad), mat_ptr(mat) {
-		radius2 = radius * radius;
-	}
-	bool hit(const Ray& r, double t_min, double t_max, hit_data& rec) const override {
-		vec3 oc = r.origin() - center;
-		float c = dot(oc, oc) - radius2;
-		float half_b = dot(r.dir(), oc);
-		float a = dot(r.dir(), r.dir());
-		float discriminant = half_b * half_b - a * c;
-		if (discriminant < 0) {
-			return false;
-		}
-
-		auto sqrt_disc = std::sqrt(discriminant);
-		float x = (-half_b - sqrt_disc) / (a);
-		if (x < t_min || x > t_max) {
-			x = (-half_b + sqrt_disc) / (a);
-			if (x < t_min || x > t_max) {
-				return false;
-			}
-		}
-
-		rec.dist = x;
-		rec.point = r.at(x);
-		rec.mat_ptr = mat_ptr;
-		vec3 out_normal = (rec.point - center) / radius;
-		rec.set_face_normal(r, out_normal);
-		return true;
-	}
-
-private:
-	vec3 center;
-	float radius;
-	float radius2;
-	std::shared_ptr<Material> mat_ptr;
-};
 
 class Hittable_List : public Hittable {
 public:
@@ -67,14 +30,14 @@ public:
     void clear() { objects.clear(); }
     void add(std::shared_ptr<Hittable> object) { objects.push_back(object); }
 
-    virtual bool hit(
-        const Ray& r, double t_min, double t_max, hit_data& rec) const override;
+    virtual bool hit(const Ray& r, float t_min, float t_max, hit_data& rec) const override;
+    virtual bool bounding_box(float time0, float time1, aabb& output_box) const override;
 
 public:
     std::vector<std::shared_ptr<Hittable>> objects;
 };
 
-bool Hittable_List::hit(const Ray& r, double t_min, double t_max, hit_data& rec) const {
+bool Hittable_List::hit(const Ray& r, float t_min, float t_max, hit_data& rec) const {
     hit_data temp_rec;
     bool hit_anything = false;;
     float closest = t_max;
@@ -88,4 +51,16 @@ bool Hittable_List::hit(const Ray& r, double t_min, double t_max, hit_data& rec)
         }
     }
     return hit_anything;
+}
+bool Hittable_List::bounding_box(float time0, float time1, aabb& output_box) const {
+    if (objects.empty()) { return false; }
+    aabb tmp;
+    bool first = true;
+    for (const auto& obj : objects) {
+        if (!obj->bounding_box(time0, time1, tmp)) { return false; }
+        if (first) { output_box = tmp; }
+        else { output_box = surrounding_box(output_box, tmp); }
+        first = false;
+    }
+    return true;
 }

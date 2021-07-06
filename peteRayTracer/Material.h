@@ -19,7 +19,7 @@ public:
         if (fabs(scatter_direction.x()) < near_zero && fabs(scatter_direction.y()) < near_zero && fabs(scatter_direction.z()) < near_zero) {
             scatter_direction = rec.normal;
         }
-        scattered = Ray(rec.point, scatter_direction);
+        scattered = Ray(rec.point, scatter_direction, r_in.time());
         attenuation = albedo;
         return dot(scattered.dir(), rec.normal) > 0;
         return true;
@@ -34,7 +34,7 @@ public:
     Metal(const vec3 a, float f) : albedo(a), fuzz(f) {}
     virtual bool scatter(const Ray& r_in, vec3& attenuation, Ray& scattered, hit_data& rec) const override {
         vec3 reflected = reflect_ray(r_in.dir(), rec.normal);
-        scattered = Ray(rec.point, unit_vector(reflected + fuzz* random_in_unit_sphere()));
+        scattered = Ray(rec.point, unit_vector(reflected + fuzz* random_in_unit_sphere()), r_in.time());
         attenuation = albedo;
         return dot(scattered.dir(), rec.normal) > 0; 
         return true;
@@ -60,7 +60,7 @@ public:
         else {
             direction = refract_ray(r_in.dir(), rec.normal, ratio_ior);
         }
-        scattered =  Ray(rec.point, direction); 
+        scattered =  Ray(rec.point, direction, r_in.time()); 
         return true;
     }
 public:
