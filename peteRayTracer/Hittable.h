@@ -5,6 +5,7 @@ struct hit_data {
 	vec3 point;
 	vec3 normal;
 	double dist;
+    float u, v;
 	bool front_face;
 	std::shared_ptr<Material> mat_ptr;
 

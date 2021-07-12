@@ -27,6 +27,9 @@ public:
 		rec.point = r.at(x);
 		rec.mat_ptr = mat_ptr;
 		vec3 out_normal = (rec.point - center) / radius;
+		rec.u = (std::atan2(-out_normal.z(), -out_normal.x()) + M_PI) / (2 * M_PI);
+		rec.v = (std::acos(out_normal.y())) / (M_PI);
+
 		rec.set_face_normal(r, out_normal);
 		return true;
 	}

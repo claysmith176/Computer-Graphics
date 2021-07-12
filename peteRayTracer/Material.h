@@ -12,7 +12,9 @@ public:
 
 class Lambertian : public Material {
 public:
-    Lambertian(const vec3& a) : albedo(a) {}
+    Lambertian(const vec3& a) : albedo(std::make_shared<Solid_Texture>(a)) {}
+    Lambertian(const std::shared_ptr<Texture> a) : albedo(a) {}
+
     virtual bool scatter(const Ray& r_in, vec3& attenuation, Ray& scattered, hit_data& rec) const override {
         vec3 scatter_direction = unit_vector(rec.normal + random_in_unit_sphere());
         float near_zero = 1e-8;
@@ -20,13 +22,13 @@ public:
             scatter_direction = rec.normal;
         }
         scattered = Ray(rec.point, scatter_direction, r_in.time());
-        attenuation = albedo;
+        attenuation = albedo->value(rec.u, rec.v, rec.point);
         return dot(scattered.dir(), rec.normal) > 0;
         return true;
     }
 
 public:
-    vec3 albedo;
+    std::shared_ptr<Texture> albedo;
 };
 
 class Metal : public Material {

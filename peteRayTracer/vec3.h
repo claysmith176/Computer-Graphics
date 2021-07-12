@@ -159,3 +159,25 @@ inline vec3 write_color(vec3 color, float samples_per_pixel) {
     vec3 new_color(std::sqrtf(color.x()), std::sqrtf(color.y()), std::sqrtf(color.z()));
     return new_color * 255.0f;
 }
+
+vec3 rotate(const float degrees, const vec3& axis, const vec3& eye) {
+    float x = axis.x();
+    float y = axis.y();
+    float z = axis.z();
+    float radians = degrees * (M_PI / 180);
+
+    glm::vec3 eye_g(eye.x(), eye.y(), eye.z());
+    glm::vec3 axis_g(axis.x(), axis.y(), axis.z());
+
+    glm::mat3 xmat(1.0f);
+    glm::mat3 ymat = glm::outerProduct(axis_g, axis_g);
+    glm::mat3 zmat(0, z, -y, -z, 0, x, y, -x, 0);
+
+    xmat = xmat * cos(radians);
+    ymat = ymat * (1 - cos(radians));
+    zmat = zmat * sin(radians);
+
+    glm::mat3 test = xmat + ymat + zmat;
+    glm::vec3 res = test * eye_g;
+    return vec3(res.x, res.y, res.z);
+}
