@@ -35,14 +35,17 @@
 #include "Camera.h"
 #include "Hittable.h"
 #include "Material.h"
+#include "Rectangle.h"
+#include "Instance.h"
 #include "Sphere.h"
 #include "bvh.h"
 
 bvh world;
 const double t_min = 0;
-const double t_max = 50;
-const int samples_per_pixel = 100;
+const double t_max = 2000;
+const int samples_per_pixel = 200;
 const int max_depth = 4;
+const vec3 background_color(0, 0, 0);
 
 float total_time = 0;
 float average = 0;
@@ -54,57 +57,31 @@ struct other_color {
 };
 
 Hittable_List random_scene() {
-    Hittable_List rand_scene;
+    Hittable_List objects;
 
-    auto texture = std::make_shared<Checkered_Texture>(vec3(0.1, 0.2, 0.8), vec3(0.7, 0.1, 0.7));
-    auto ground_material = std::make_shared<Lambertian>(texture);
-    //auto ground_material = std::make_shared<Lambertian>(vec3(0.5, 0.5, 0.5));
-    rand_scene.add(std::make_shared<Sphere>(vec3(0, -1000, 0), 1000, ground_material));
+    auto red = std::make_shared<Lambertian>(color(.65, .05, .05));
+    auto white = std::make_shared<Lambertian>(color(.73, .73, .73));
+    auto green = std::make_shared<Lambertian>(color(.12, .45, .15));
+    auto light = std::make_shared<Diffuse_Light>(color(15, 15, 15));
 
-    //for (int a = -11; a < 11; a++) {
-    //    for (int b = -11; b < 11; b++) {
-    //        auto choose_mat = random_float();
-    //        vec3 center(a + 0.9 * random_float(), 0.2, b + 0.9 * random_float());
+    objects.add(std::make_shared<YZ_Rect>(0, 555, 0, 555, 555, green));
+    objects.add(std::make_shared<YZ_Rect>(0, 555, 0, 555, 0, red));
+    objects.add(std::make_shared<XZ_Rect>(213, 343, 227, 332, 554, light));
+    objects.add(std::make_shared<XZ_Rect>(0, 555, 0, 555, 0, white));
+    objects.add(std::make_shared<XZ_Rect>(0, 555, 0, 555, 555, white));
+    objects.add(std::make_shared<XY_Rect>(0, 555, 0, 555, 555, white));
 
-    //        if ((center - vec3(4, 0.2, 0)).length() > 0.9) {
-    //            std::shared_ptr<Material> sphere_material;
+    std::shared_ptr<Hittable> box1 = std::make_shared<Box>(vec3(0, 0, 0), vec3(165, 330, 165), white);
+    box1 = std::make_shared<Y_Rotate>(box1, 15);
+    box1 = std::make_shared<Translate>(box1, vec3(265, 0, 295));
+    objects.add(box1);
 
-    //            if (choose_mat < 0.8) {
-    //                // diffuse
-    //                auto albedo = vec3(random_float(0.15, 1), random_float(0.15, 1), random_float(0.15, 1)) /* * vec3(random_float(0.5, 1), random_float(0.5, 1), random_float(0.5, 1)) */;
-    //                sphere_material = std::make_shared<Lambertian>(albedo);
-    //                rand_scene.add(std::make_shared<Sphere>(center, 0.2, sphere_material));
-    //                //auto center2 = center + vec3(0, random_float(0, .5), 0);
-    //                //rand_scene.add(std::make_shared<Moving_sphere>(
-    //                //    center, center2, 0.0, 1.0, 0.2, sphere_material));
-    //            }
-    //            else if (choose_mat < 0.95) {
-    //                // metal
-    //                auto albedo = vec3(random_float(0.25, 1), random_float(0.25, 1), random_float(0.25, 1));
-    //                auto fuzz = random_float(0, 0.5);
-    //                sphere_material = std::make_shared<Metal>(albedo, fuzz);
-    //                rand_scene.add(std::make_shared<Sphere>(center, 0.2, sphere_material));
-    //            }
-    //            else {
-    //                // glass
-    //                sphere_material = std::make_shared<Dielectric>(1.5);
-    //                rand_scene.add(std::make_shared<Sphere>(center, 0.2, sphere_material));
-    //            }
-    //        }
-    //    }
-    //}
+    std::shared_ptr<Hittable> box2 = std::make_shared<Box>(vec3(0, 0, 0), vec3(165, 165, 165), white);
+    box2 = std::make_shared<Y_Rotate>(box2, -18);
+    box2 = std::make_shared<Translate>(box2, vec3(130, 0, 65));
+    objects.add(box2);
 
-    auto material1 = std::make_shared<Dielectric>(1.5);
-    rand_scene.add(std::make_shared<Sphere>(vec3(0, 1, 0), 1.0, material1));
-
-    //auto material2 = std::make_shared<Lambertian>(texture);
-    auto material2 = std::make_shared<Lambertian>(vec3(0.4, 0.6, 0.3));
-    rand_scene.add(std::make_shared<Sphere>(vec3(-6, 1, 0), 1.0, material2));
-
-    auto material3 = std::make_shared<Metal>(vec3(0.7, 0.6, 0.5), 0.0);
-    rand_scene.add(std::make_shared<Sphere>(vec3(4, 1, 0), 1.0, material3));
-
-    return rand_scene;
+    return objects;
 }
 
 vec3 cast_ray(const Ray& r, int depth) {
@@ -112,18 +89,16 @@ vec3 cast_ray(const Ray& r, int depth) {
     if (depth == 0) {
         return vec3(0, 0, 0);
     }  
-    if (world.hit(r, 0.001, t_max, rec)) {
-        Ray scattered;
-        vec3 attenuation;
-        if (rec.mat_ptr->scatter(r, attenuation, scattered, rec)) {
-            return attenuation * cast_ray(scattered, depth - 1);
-        }
-        return vec3(0, 0, 0);
+    if (!world.hit(r, 0.001, t_max, rec)) {
+        return background_color;
     }
-    float y = r.dir().y();
-    float t = ((y + 1) / 2);
-
-    return (1.0 - t) * vec3(255, 255, 255) + t * vec3(127, 178, 255);
+    Ray scattered;
+    vec3 attenuation;
+    vec3 emit = rec.mat_ptr->emitted(rec.u, rec.v, rec.point);;
+    if (!rec.mat_ptr->scatter(r, attenuation, scattered, rec)) {
+        return emit;
+    }
+    return emit + attenuation * cast_ray(scattered, depth - 1);
 }
 
 void render(int iWidth, int total_height, int start_height, int end_height, Camera cam, void* void_pointer) {
@@ -131,6 +106,9 @@ void render(int iWidth, int total_height, int start_height, int end_height, Came
     for (int i = start_height; i < end_height; i++) {
         //std::cerr << "\rScanlines remaining: " << total_height - i << ' ' << std::flush;
         for (int j = 0; j < iWidth; j++) {
+            if (j == 589 && i == 250) { 
+                int teadf = 43; 
+            }
             vec3 colorVector;
             for (int a = 0; a < samples_per_pixel; a++) {
                 Ray r = cam.get_ray(float(j + random_float()) / (iWidth - 1), float(i + random_float()) / (total_height - 1));
@@ -171,7 +149,7 @@ void make_movie(Camera cam, int image_width, int image_height, std::string name)
 
     for (int i = 0; i < jobs.size(); i++) {
         jobs[i].join();
-        std::cerr << "\rThread " << i << " Done " << std::flush;
+        std::cout << "\rThread " << i << " Done " << std::endl;
     }
     std::cout << std::flush << "Image " << name << " Done " << std::endl;
     std::ofstream ofs;
@@ -187,27 +165,19 @@ int main()
     srand(static_cast <unsigned> (time(0)));
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    Hittable_List objects;
+    world = bvh(random_scene(), 0, 1);
 
-    auto pertext = std::make_shared<Noise_Texture>(5.0);
-    auto obama = std::make_shared<Image_Texture>("obama.png");
-    //objects.add(std::make_shared<Sphere>(vec3(0, -1000, 0), 1000, std::make_shared<Lambertian>(pertext)));
-    objects.add(std::make_shared<Sphere>(vec3(0, 2, 0), 2, std::make_shared<Lambertian>(obama)));
-    world = bvh(objects, 0, 1);
-    //world = bvh(random_scene(), 0, 1);
-
-    //vec3 lookfrom(13, 2, 3);
-    vec3 lookfrom(0, 2, -14);
-    vec3 lookat(0, 2, 0);
+    vec3 lookfrom(278, 278, -800);
+    vec3 lookat(278, 278, 0);
     vec3 up(0, 1, 0);
+    float hfov = 40;
 
-    const float aspect_ratio = 16.0f / 9.0f;
-    const int image_height = 480;
+    const float aspect_ratio = 1;
+    const int image_height = 500;
     const int image_width = static_cast<int>(image_height * aspect_ratio);;
-    //const int image_height = static_cast<int>(image_width / aspect_ratio);
-    Camera cam = Camera(34, aspect_ratio, 0, 1, lookfrom, lookat, up);
+    Camera cam = Camera(hfov, aspect_ratio, 0, 1, lookfrom, lookat, up);
 
-    for (int i = 0; i < 180; i++) {
+    for (int i = 0; i < 1; i++) {
         make_movie(cam, image_width, image_height, std::to_string(i));
         lookfrom = rotate(1, up, lookfrom);
         cam = Camera(34, aspect_ratio, 0, 1, lookfrom, lookat, up);

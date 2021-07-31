@@ -152,9 +152,11 @@
     <ClInclude Include="bvh.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Hittable.h" />
+    <ClInclude Include="Instance.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Perlin.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="Rectangle.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Texture.h" />

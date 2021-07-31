@@ -34,9 +34,9 @@ public:
 		return true;
 	}
 
-	bool bounding_box(float time0, float time1, aabb& output_bot) const override {
+	bool bounding_box(float time0, float time1, aabb& output_box) const override {
 		vec3 rad = vec3(radius, radius, radius);
-		output_bot = aabb(center - rad, center + rad);
+		output_box = aabb(center - rad, center + rad);
 		return true;
 	}
 
@@ -79,11 +79,11 @@ public:
 		rec.set_face_normal(r, out_normal);
 		return true;
 	}
-	bool bounding_box(float time0, float time1, aabb& output_bot) const override {
+	bool bounding_box(float time0, float time1, aabb& output_box) const override {
 		vec3 rad = vec3(radius, radius, radius);
 		aabb box0 = aabb(get_center(time0) - rad, get_center(time0) + rad);
 		aabb box1 = aabb(get_center(time1) - rad, get_center(time1) + rad);
-		output_bot = surrounding_box(box0, box1);
+		output_box = surrounding_box(box0, box1);
 		return true;
 	}
 	vec3 get_center(float time) const {

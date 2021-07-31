@@ -44,12 +44,13 @@ public:
 	Noise_Texture(float s) : scale(s) {}
 
 	vec3 value(float u, float v, const vec3& p) const override {
-		return vec3(1, 1, 1) * 0.5 * (1 + sin((scale * p.x()) +10*noise.turb(p)));
+		return vec3(1, 1, 1) * 0.5 * (1 + sin((scale * p.z()) +10*noise.turb(p)));
 	}
 private:
 	perlin noise;
 	float scale;
 };
+
 class Image_Texture : public Texture {
 public:
 	Image_Texture() {}
