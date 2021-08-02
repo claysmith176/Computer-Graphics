@@ -1,0 +1,35 @@
+    Hittable_List objects;
+
+    auto red = std::make_shared<Lambertian>(color(.65, .05, .05));
+    auto white = std::make_shared<Lambertian>(color(.73, .73, .73));
+    auto green = std::make_shared<Lambertian>(color(.12, .45, .15));
+    auto light = std::make_shared<Diffuse_Light>(color(15, 15, 15));
+
+    objects.add(std::make_shared<YZ_Rect>(0, 555, 0, 555, 555, green));
+    objects.add(std::make_shared<YZ_Rect>(0, 555, 0, 555, 0, red));
+    objects.add(std::make_shared<XZ_Rect>(213, 343, 227, 332, 554, light));
+    objects.add(std::make_shared<XZ_Rect>(0, 555, 0, 555, 0, white));
+    objects.add(std::make_shared<XZ_Rect>(0, 555, 0, 555, 555, white));
+    objects.add(std::make_shared<XY_Rect>(0, 555, 0, 555, 555, white));
+
+    std::shared_ptr<Hittable> box1 = std::make_shared<Box>(vec3(0, 0, 0), vec3(165, 330, 165), white);
+    box1 = std::make_shared<Y_Rotate>(box1, 15);
+    box1 = std::make_shared<Translate>(box1, vec3(265, 0, 295));
+    objects.add(box1);
+
+    std::shared_ptr<Hittable> box2 = std::make_shared<Box>(vec3(0, 0, 0), vec3(165, 165, 165), white);
+    box2 = std::make_shared<Y_Rotate>(box2, -18);
+    box2 = std::make_shared<Translate>(box2, vec3(130, 0, 65));
+    objects.add(box2);
+
+    return objects;
+
+
+Camera Setting:
+            aspect_ratio = 1.0;
+            image_width = 600;
+            samples_per_pixel = 200;
+            background = color(0,0,0);
+            lookfrom = point3(278, 278, -800);
+            lookat = point3(278, 278, 0);
+            vfov = 40.0;

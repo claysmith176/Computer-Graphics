@@ -56,7 +56,7 @@ public:
 	Image_Texture() {}
 	Image_Texture(std::string filename) {
 		int compoents_thing = 0;
-		data = stbi_load("obama.png", &width, &height, &compoents_thing, bytes_per_pizel);
+		data = stbi_load(&filename[0], &width, &height, &compoents_thing, bytes_per_pizel);
 		if (!data) {
 			std::cerr << "Image Failed to Load" << std::endl;
 			width = height = 0;
@@ -65,6 +65,8 @@ public:
 	}
 	vec3 value(float u, float v, const vec3& p) const override {
 		if (data == nullptr) { return vec3(0, 1, 1); }
+
+		u = 1 - u;
 
 		int i = static_cast<int>(u * width);
 		int j = static_cast<int>(v * height);

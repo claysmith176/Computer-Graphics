@@ -94,3 +94,17 @@ public:
     std::shared_ptr<Texture> emit;
 
 };
+
+class Isotropic : public Material {
+public:
+    Isotropic(const vec3& a) : albedo(std::make_shared<Solid_Texture>(a)) {}
+    Isotropic(const std::shared_ptr<Texture> a) : albedo(a) {}
+
+    virtual bool scatter(const Ray& r_in, vec3& attenuation, Ray& scattered, hit_data& rec) const override {
+        scattered = Ray(r_in.origin(), random_unit_vector(), r_in.time());
+        attenuation = albedo->value(rec.u, rec.v, rec.point);
+        return true;
+    }
+public:
+    std::shared_ptr<Texture> albedo;
+};

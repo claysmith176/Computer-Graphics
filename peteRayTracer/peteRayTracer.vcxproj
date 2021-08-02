@@ -151,6 +151,7 @@
     <ClInclude Include="aabb.h" />
     <ClInclude Include="bvh.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Constant_Volume.h" />
     <ClInclude Include="Hittable.h" />
     <ClInclude Include="Instance.h" />
     <ClInclude Include="Material.h" />

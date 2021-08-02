@@ -62,5 +62,8 @@
     <ClInclude Include="Instance.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Constant_Volume.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

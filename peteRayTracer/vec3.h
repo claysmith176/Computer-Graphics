@@ -157,10 +157,11 @@ inline vec3 write_color(vec3 color, float samples_per_pixel) {
 
     // gamma correction
     vec3 new_color(std::sqrtf(color.x()), std::sqrtf(color.y()), std::sqrtf(color.z()));
+    new_color *= 255.0f;
     if (new_color.x() > 255) { new_color = vec3(255, new_color.y(), new_color.z()); }
     if (new_color.y() > 255) { new_color = vec3(new_color.x(), 255, new_color.z()); }
     if (new_color.z() > 255) { new_color = vec3(new_color.x(), new_color.y(), 255); }
-    return new_color * 255.0f;
+    return new_color;
 }
 
 vec3 rotate(const float degrees, const vec3& axis, const vec3& eye) {

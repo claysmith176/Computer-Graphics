@@ -38,12 +38,13 @@
 #include "Rectangle.h"
 #include "Instance.h"
 #include "Sphere.h"
+#include "Constant_Volume.h"
 #include "bvh.h"
 
 bvh world;
 const double t_min = 0;
 const double t_max = 2000;
-const int samples_per_pixel = 200;
+const int samples_per_pixel = 2000;
 const int max_depth = 4;
 const vec3 background_color(0, 0, 0);
 
@@ -98,6 +99,7 @@ vec3 cast_ray(const Ray& r, int depth) {
     if (!rec.mat_ptr->scatter(r, attenuation, scattered, rec)) {
         return emit;
     }
+
     return emit + attenuation * cast_ray(scattered, depth - 1);
 }
 
@@ -106,13 +108,10 @@ void render(int iWidth, int total_height, int start_height, int end_height, Came
     for (int i = start_height; i < end_height; i++) {
         //std::cerr << "\rScanlines remaining: " << total_height - i << ' ' << std::flush;
         for (int j = 0; j < iWidth; j++) {
-            if (j == 589 && i == 250) { 
-                int teadf = 43; 
-            }
             vec3 colorVector;
             for (int a = 0; a < samples_per_pixel; a++) {
                 Ray r = cam.get_ray(float(j + random_float()) / (iWidth - 1), float(i + random_float()) / (total_height - 1));
-                colorVector += cast_ray(r, max_depth);                
+                colorVector += cast_ray(r, max_depth);     
             }
 
             colorVector = write_color(colorVector, samples_per_pixel);
@@ -173,7 +172,7 @@ int main()
     float hfov = 40;
 
     const float aspect_ratio = 1;
-    const int image_height = 500;
+    const int image_height = 800;
     const int image_width = static_cast<int>(image_height * aspect_ratio);;
     Camera cam = Camera(hfov, aspect_ratio, 0, 1, lookfrom, lookat, up);
 
