@@ -44,7 +44,11 @@
 bvh world;
 const double t_min = 0;
 const double t_max = 2000;
+<<<<<<< Updated upstream
 const int samples_per_pixel = 20;
+=======
+const int samples_per_pixel = 10;
+>>>>>>> Stashed changes
 const int max_depth = 4;
 const vec3 background_color(0, 0, 0);
 
