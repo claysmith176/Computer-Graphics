@@ -26,7 +26,6 @@ public:
 		horizontal = viewportWidth * u;
 		vertical = viewportHeight * v;
 		top_left_corner = origin - horizontal * 0.5f + vertical * 0.5f - w;
-
 		time0 = tm0;
 		time1 = tm1;
 	}

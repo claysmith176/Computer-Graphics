@@ -44,11 +44,7 @@
 bvh world;
 const double t_min = 0;
 const double t_max = 2000;
-<<<<<<< Updated upstream
-const int samples_per_pixel = 20;
-=======
 const int samples_per_pixel = 10;
->>>>>>> Stashed changes
 const int max_depth = 4;
 const vec3 background_color(0, 0, 0);
 
@@ -99,7 +95,7 @@ vec3 cast_ray(const Ray& r, int depth) {
     }
     Ray scattered;
     vec3 attenuation;
-    vec3 emit = rec.mat_ptr->emitted(rec.u, rec.v, rec.point);;
+    vec3 emit = rec.mat_ptr->emitted(rec.u, rec.v, rec.point);
     if (!rec.mat_ptr->scatter(r, attenuation, scattered, rec)) {
         return emit;
     }
@@ -125,6 +121,15 @@ void render(int iWidth, int total_height, int start_height, int end_height, Came
             c.g = (unsigned char)colorVector.y();
             c.b = (unsigned char)colorVector.z();
             frameBuffer[thing] = c;
+
+            if (i == 160 && j == 160) {
+                vec3 lookat = vec3(0.0, 0.0, 1.0);
+                vec3 origin = vec3(0.0, 0.0, 0.0);
+                vec3 u = vec3(0.0, 1.0, 0.0);
+                Camera c = Camera(60.0f, 1.0f, 1, 1, origin, lookat, u);
+                Ray test = c.get_ray(float(j) / (500 - 1), float(i) / (500 - 1));
+                std::cout << test.dir()[0] << ", " << test.dir()[1] << ", " << test.dir()[2] << std::endl;
+            }
         }
     }
 }
